@@ -4,19 +4,31 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./App";
+import ErrorPage from "./errorPage";
+import Root from "./routes/root";
+import Categoria from "./routes/categoria";
+import { Chose } from "./routes/chose";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <div className="bg-black text-white font-mono text-2xl gap-6 py-5">
-        Hello world!
-      </div>
-    ),
+    element: <Root />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: "/app",
+        element: <App />,
+      },
+      {
+        path: "/chose",
+        element: <Chose />,
+      },
+    ],
   },
   {
-    path: "/app",
-    element: <App />,
+    path: "/categoria/:categoria/:nr",
+    element: <Categoria />,
+    errorElement: <ErrorPage />,
   },
 ]);
 

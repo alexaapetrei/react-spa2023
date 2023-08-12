@@ -1,10 +1,10 @@
-import a from "./a.js";
-import b from "./b.js";
-import c from "./c.js";
-import d from "./d.js";
-import e from "./e.js";
-import r from "./r.js";
-import t from "./t.js";
+import a from "./a.ts";
+import b from "./b.ts";
+import c from "./c.ts";
+import d from "./d.ts";
+import e from "./e.ts";
+import r from "./r.ts";
+import t from "./t.ts";
 
 export interface Ans {
   [key: string]: string;
