@@ -9,6 +9,17 @@ import Root from "./routes/root";
 import Categoria from "./routes/categoria";
 import { Chose } from "./routes/chose";
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("/src/sw.js")
+    .then((registration) => {
+      console.log("Service Worker registered with scope:", registration.scope);
+    })
+    .catch((err) => {
+      console.error("Service Worker registration failed:", err);
+    });
+}
+
 const router = createBrowserRouter([
   {
     path: "/",

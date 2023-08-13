@@ -2953,6 +2953,8 @@ const allTheQuestions = [
   "/categoria/t/0",
   "/categoria/t/1",
   "/categoria/t/2",
+  "/chose",
+  "/",
 ];
 const allTheImmages = [
   "/bear2023.svg",
@@ -3511,9 +3513,9 @@ const allTheImmages = [
   "/img/d/2206.jpg",
   "/img/d/2221.jpg",
 ];
-
+// import workbox from "workbox-sw";
 importScripts(
-  "https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js",
+  "https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js"
 );
 
 const HTML_CACHE = "html";
@@ -3537,7 +3539,7 @@ workbox.routing.registerRoute(
         maxEntries: 3000,
       }),
     ],
-  }),
+  })
 );
 
 workbox.routing.registerRoute(
@@ -3549,7 +3551,7 @@ workbox.routing.registerRoute(
         maxEntries: 15,
       }),
     ],
-  }),
+  })
 );
 
 workbox.routing.registerRoute(
@@ -3561,7 +3563,7 @@ workbox.routing.registerRoute(
         maxEntries: 15,
       }),
     ],
-  }),
+  })
 );
 
 workbox.routing.registerRoute(
@@ -3573,7 +3575,7 @@ workbox.routing.registerRoute(
         maxEntries: 3000,
       }),
     ],
-  }),
+  })
 );
 
 workbox.routing.registerRoute(
@@ -3585,7 +3587,7 @@ workbox.routing.registerRoute(
         maxEntries: 15,
       }),
     ],
-  }),
+  })
 );
 
 addEventListener("install", (event) => {
@@ -3607,9 +3609,11 @@ async function registerCache() {
     for (let i = 0; i < urls.length; i += BATCH_SIZE) {
       const batch = urls.slice(i, i + BATCH_SIZE);
       const addCachePromises = batch.map((url) =>
-        cache.add(url).catch((error) =>
-          console.warn(`WAT - Failed to cache ${url}: ${error}`)
-        )
+        cache
+          .add(url)
+          .catch((error) =>
+            console.warn(`WAT - Failed to cache ${url}: ${error}`)
+          )
       );
 
       await Promise.all(addCachePromises);
