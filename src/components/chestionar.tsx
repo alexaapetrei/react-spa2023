@@ -70,6 +70,7 @@ export default function Chestionar({
       <p className="text-2xl text-gray-500 font-bold">{chosen.q}</p>
       {Object.keys(chosen.ans).map((answer) => (
         <div
+          key={answer}
           onClick={() => {
             checked
               ? null

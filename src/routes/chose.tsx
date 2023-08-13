@@ -28,6 +28,7 @@ export function Chose() {
 
           return (
             <Link
+              key={c}
               className="p-5 rounded-md bg-slate-50"
               to={`/categoria/${c}/${totalCount}`}
             >

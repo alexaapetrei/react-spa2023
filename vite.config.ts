@@ -10,8 +10,8 @@ port:3030
   plugins: [
     react(),
     VitePWA({
-      srcDir: 'src',
-      filename: 'sw.js',
+      strategies:'injectManifest',
+      filename: 'pwa-sw.js',
       devOptions: {
         enabled: true,
       },
