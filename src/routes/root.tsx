@@ -1,19 +1,40 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useOutlet, useParams } from "react-router-dom";
+import { Chose } from "./chose";
+import { Button } from "@/components/ui/button";
+type routeProps = {
+  categoria?: string;
+  nr?: string;
+};
 export default function Root() {
+  const outlet = useOutlet();
+  const { categoria, nr } = useParams<routeProps>();
   return (
     <>
-      <div className="flex justify-center  bg-black text-white font-mono text-2xl gap-6 py-5">
-        <img
-          src="/bear2023.svg"
-          alt="alive and kicking"
-          width="60px"
-          height="60px"
-        />
-        <h2>Hello ther go here -&gt;</h2>
-        <Link to={"/chose"}>CHOSE SOMETHING</Link>
-      </div>
-
-      <Outlet />
+      <section className="flex w-screen">
+        <div className="flex flex-row w-full justify-center items-center  bg-black text-white gap-10">
+          <Link to={"/"}>
+            <img
+              src="/bear2023.svg"
+              alt="alive and kicking"
+              width="50px"
+              className="m-2"
+            />
+          </Link>
+          <h2>Salutare , ia si invata !</h2>
+          {categoria && (
+            <>
+              <h3>Esti in Categoria {categoria.toUpperCase()}</h3>
+              <h4>intrebarea {nr}</h4>
+            </>
+          )}
+          {outlet && (
+            <Button asChild>
+              <Link to={"/"}>Back Home</Link>
+            </Button>
+          )}
+        </div>
+      </section>
+      {outlet ? <Outlet /> : <Chose />}
     </>
   );
 }

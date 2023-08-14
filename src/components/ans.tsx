@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback } from "./ui/avatar";
+
 type AnsProps = {
   val: string;
   text: string;
@@ -15,15 +17,17 @@ export default function Ans({ text, val, active, correct, checked }: AnsProps) {
         ${selectedByUser ? "bg-lime-900" : "bg-slate-300"}
         `}
     >
-      <span className="flex flex-col bg-slate-100 rounded-lg items-center p-2 justify-center w-[2rem] ">
-        {checked
-          ? correct?.includes(val)
-            ? "✔️"
-            : "❌"
-          : selectedByUser
-          ? tick
-          : val}
-      </span>
+      <Avatar>
+        <AvatarFallback className="uppercase font-semibold">
+          {checked
+            ? correct?.includes(val)
+              ? "✔️"
+              : "❌"
+            : selectedByUser
+            ? tick
+            : val}
+        </AvatarFallback>
+      </Avatar>
 
       <span className="text">{text}</span>
     </div>

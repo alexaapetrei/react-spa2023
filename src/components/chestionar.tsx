@@ -56,66 +56,62 @@ export default function Chestionar({
   };
   return (
     <>
-      <h2 className="text-2xl text-yellow-200 font-bold">
-        Categoria : {categoria}
-      </h2>
-
-      {chosen.i > 0 && (
-        <img
-          data-fresh-disable-lock
-          src={`/img/${categoria}/${chosen.i}.jpg`}
-        ></img>
-      )}
-
-      <p className="text-2xl text-gray-500 font-bold">{chosen.q}</p>
-      {Object.keys(chosen.ans).map((answer) => (
-        <div
-          key={answer}
-          onClick={() => {
-            checked
-              ? null
-              : setActive(
-                  (active.includes(answer)
-                    ? active.filter((a) => a !== answer)
-                    : [...active, answer]
-                  ).sort()
-                );
-          }}
-        >
-          <Ans
-            text={chosen.ans[answer]}
-            val={answer}
-            checked={checked}
-            correct={chosen.v}
-            active={active}
+      <section id="imageAndQuestins" className="pb-20">
+        {chosen.i > 0 && (
+          <img
+            data-fresh-disable-lock
+            className="max-w-md min-w-max"
+            src={`/img/${categoria}/${chosen.i}.jpg`}
           />
-        </div>
-      ))}
-
-      <div className="flex flex-row gap-3 my-3 justify-end">
+        )}
+        <p className="text-2xl text-gray-500 font-bold">{chosen.q}</p>
+        {Object.keys(chosen.ans).map((answer) => (
+          <div
+            key={answer}
+            onClick={() => {
+              checked
+                ? null
+                : setActive(
+                    (active.includes(answer)
+                      ? active.filter((a) => a !== answer)
+                      : [...active, answer]
+                    ).sort()
+                  );
+            }}
+          >
+            <Ans
+              text={chosen.ans[answer]}
+              val={answer}
+              checked={checked}
+              correct={chosen.v}
+              active={active}
+            />
+          </div>
+        ))}
+      </section>
+      <section
+        id="verificator"
+        className="fixed bottom-0 w-full left-0 right-0"
+      >
         {checked ? (
-          <>
-            <Link
-              className={`p-5 rounded-md  basis-1/2
+          <Link
+            className={`flex w-full p-5 m-5 rounded-md
                 ${active.toString() == chosen.v ? "bg-green-300" : "bg-red-400"}
                 `}
-              onClick={resetChestionar}
-              to={`/categoria/${categoria}/${next}`}
-            >
-              Next
-            </Link>
-          </>
+            onClick={resetChestionar}
+            to={`/categoria/${categoria}/${next}`}
+          >
+            Next
+          </Link>
         ) : active.length > 0 ? (
           <button
-            className=" p-5 rounded-md bg-pink-500 basis-1/2"
+            className="flex w-full p-5 m-5 rounded-md bg-pink-500"
             onClick={verifica}
           >
             Verifica Raspunsurile
           </button>
-        ) : (
-          <></>
-        )}
-      </div>
+        ) : null}
+      </section>
     </>
   );
 }

@@ -6,7 +6,6 @@ import "./index.css";
 import ErrorPage from "./errorPage";
 import Root from "./routes/root";
 import Categoria from "./routes/categoria";
-import { Chose } from "./routes/chose";
 
 const router = createBrowserRouter([
   {
@@ -15,15 +14,11 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "/chose",
-        element: <Chose />,
+        path: "/categoria/:categoria/:nr",
+        element: <Categoria />,
+        errorElement: <ErrorPage />,
       },
     ],
-  },
-  {
-    path: "/categoria/:categoria/:nr",
-    element: <Categoria />,
-    errorElement: <ErrorPage />,
   },
 ]);
 

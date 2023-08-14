@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import catego from "../../public/data/catego";
 import Chestionar from "../components/chestionar";
-import { Link } from "react-router-dom";
 
 type routeProps = {
   categoria: string;
@@ -18,16 +17,8 @@ export default function Categoria() {
 
   //   if (!categoria || !chosen) return <Chose />;
   return (
-    <div className="flex sm:flex-row flex-col p-5 bg-orange-300 gap-5">
-      <div className="basis-1/4">
-        <Link className=" p-5 rounded-md bg-slate-300 flex" to={`/chose`}>
-          &lt; BACK
-        </Link>
-      </div>
-
-      <div className="basis-3/4">
-        <Chestionar next={next} chosen={chosen} categoria={categoria} />
-      </div>
-    </div>
+    <section className="flex flex-col m-10 basis-4/5">
+      <Chestionar next={next} chosen={chosen} categoria={categoria} />
+    </section>
   );
 }

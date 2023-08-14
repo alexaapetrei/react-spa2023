@@ -2,6 +2,15 @@ import catego from "../../public/data/catego";
 import { Link } from "react-router-dom";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
 type localState = { corecte: string[]; gresite: string[] };
 
 export function Chose() {
@@ -12,11 +21,8 @@ export function Chose() {
     if (localState) setState(JSON.parse(localState));
   }, []);
   return (
-    <section className="bg-lime-500 p-11 rounded-lg my-10">
-      <h1 className="text-stone-100 font-bold mb-10 text-2xl text-center">
-        Chose your starter
-      </h1>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-4">
+    <section className="bg-lime-500 p-11 rounded-lg m-5 flex basis-4/5">
+      <Accordion type="single" collapsible className="flex-col w-full">
         {Object.keys(catego).map((c) => {
           const corecteCount = state.corecte.filter((q) =>
             q.includes(c)
@@ -27,34 +33,56 @@ export function Chose() {
           const totalCount = corecteCount + gresiteCount;
 
           return (
-            <Link
-              key={c}
-              className="p-5 rounded-md bg-slate-50"
-              to={`/categoria/${c}/${totalCount}`}
+            <AccordionItem
+              key={`catego-${c}`}
+              value={`catego-${c}`}
+              className="border-green-800"
             >
-              {c.toUpperCase()}
-              <progress
-                className="w-full"
-                title={`Categoria ${c} - Corecte: ${corecteCount} Gresite : ${gresiteCount}`}
-                value={totalCount}
-                max={catego[c].length}
-              >
-                {`Categoria ${c} - Corecte: ${corecteCount} Gresite : ${gresiteCount}`}
-              </progress>
-            </Link>
+              <AccordionTrigger className="uppercase">
+                Categoria - {c}
+              </AccordionTrigger>
+              <AccordionContent className="">
+                <p>Cum stai pana acuma :</p>
+                <Progress
+                  value={(totalCount / catego[c].length) * 100}
+                ></Progress>
+                <p className="my-5">{`Din totalul de ${
+                  catego[c].length
+                } mai ai ${catego[c].length - totalCount}`}</p>
+                <p>{`Corecte: ${corecteCount} Gresite : ${gresiteCount}`}</p>
+                <Button asChild className="my-5 justify-self-end">
+                  <Link
+                    className="uppercase font-semibold justify-center "
+                    to={`/categoria/${c}/${totalCount}`}
+                  >
+                    start categoria {c.toUpperCase()}
+                  </Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
           );
         })}
 
-        <button
-          className="p-5 rounded-md bg-slate-50"
-          onClick={() => {
-            localStorage.clear();
-            setState({ corecte: [], gresite: [] });
-          }}
-        >
-          RESET
-        </button>
-      </div>
+        <AccordionItem value="reset" className="border-green-800">
+          <AccordionTrigger className="uppercase">reseteaza</AccordionTrigger>
+          <AccordionContent className="">
+            <p className="my-6">
+              Boss , daca esti sigut ca vrei sa o iei de la capat, da aci un
+              reset
+            </p>
+            <Button
+              variant="destructive"
+              className=" uppercase font-semibold justify-center"
+              onClick={() => {
+                localStorage.clear();
+                setState({ corecte: [], gresite: [] });
+              }}
+            >
+              reSeT
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </section>
   );
 }
