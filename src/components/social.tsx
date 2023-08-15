@@ -2,17 +2,38 @@ export function Social() {
   return (
     <>
       <a
+        className="btn btn-outline btn-success"
+        href="whatsapp://send?text=https://test.urssur.com E cea mai faina metoda de a invata pentru examenul sala"
+        title="Share pe WhatsApp"
+      >
+        WhatsApp
+      </a>
+      <a
+        className="btn btn-outline bg-slate-500"
+        href="sms:?&body=https://test.urssur.com"
+      >
+        Share SMS
+      </a>
+
+      <a
         className="btn btn-outline btn-info"
-        href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Furssur.com"
+        href="https://www.facebook.com/sharer/sharer.php?u=https://test.urssur.com"
         target="_blank"
         title="Share pe Facebook"
       >
         Facebook
       </a>
+      <a
+        className="btn btn-outline bg-fuchsia-600"
+        href="fb-messenger://share/?link=https://test.urssur.com"
+        target="_blank"
+      >
+        Messenger
+      </a>
 
       <a
         className="btn btn-outline btn-primary"
-        href="https://twitter.com/intent/tweet?source=https%3A%2F%2Furssur.com&amp;text=Chestionare%20Auto%20DRPCIV%20-%20Invata%20pe%20UrsSur.com:%20https%3A%2F%2Furssur.com&amp;via=urssur"
+        href="https://twitter.com/intent/tweet?source=https://test.urssur.com&text=Chestionare Auto DRPCIV - Invata pe UrsSur.com: https://urssur.com&via=urssur"
         target="_blank"
         title="Share pe Twitter"
       >
@@ -20,16 +41,8 @@ export function Social() {
       </a>
 
       <a
-        className="btn btn-outline btn-success"
-        href="whatsapp://send?text=https://urssur.com E cea mai faina metoda de a invata pentru examenul sala"
-        title="Share pe WhatsApp"
-      >
-        WhatsApp
-      </a>
-
-      <a
         className="btn btn-outline btn-dark"
-        href="mailto:?subject=Chestionare%20Auto%20DRPCIV%20-%20Invata%20pe%20UrsSur.com&amp;body=Cea%20mai%20buna%20metoda%20de%20a%20invata%20pentru%20examenul%20sala:%20https%3A%2F%2Furssur.com"
+        href="mailto:?subject=Chestionare Auto DRPCIV - Invata pe UrsSur.com&body=Cea mai buna metoda de a invata pentru examenul sala: https://test.urssur.com"
         target="_blank"
         title="Trimite pe email"
       >
