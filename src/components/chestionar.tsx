@@ -29,6 +29,10 @@ export default function Chestionar({
 
   const verifica = () => {
     setChecked(true);
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "smooth",
+    });
     const key = active.toString() === chosen.v ? "corecte" : "gresite";
     let newState = { ...state, [key]: [...state[key], chosen.id] };
     if (isRetake && key === "corecte") {
