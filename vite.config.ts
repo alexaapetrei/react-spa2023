@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.img', 'bear2023.svg', 'img/*', 'img/a/*', 'img/b/*', 'img/c/*', 'img/d/*', 'data/*'],
       workbox: {
         cacheId: `urs-sur-${timestamp}`,
@@ -43,12 +43,13 @@ export default defineConfig({
         //     },
         //   },
         // ],
-        navigateFallback: '/offline.html',
+        navigateFallback: '/index.html',
         navigateFallbackDenylist: [
           // Exclude URLs starting with /api/
           /^\/api\//,
         ],
-        directoryIndex: '/',
+        // directoryIndex: '/',
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         cleanupOutdatedCaches: true,
       }
     })
