@@ -1,7 +1,7 @@
 import { Outlet, Link, useOutlet, useParams } from "react-router-dom";
 import { Chose } from "./chose";
 import { Social } from "../components/social";
-import { useRef } from "react";
+import { useRef, ElementRef } from "react";
 export default function Root() {
   const outlet = useOutlet();
   type routeProps = {
@@ -10,7 +10,7 @@ export default function Root() {
   };
   const { categoria, nr } = useParams<routeProps>();
 
-  const menuRef = useRef(null);
+  const menuRef = useRef<ElementRef<"label">>(null);
 
   const changeTheme = () => {
     const current = document.documentElement.getAttribute("data-theme");
@@ -78,6 +78,7 @@ export default function Root() {
             </div>
             <div className="flex-none hidden lg:block">
               <section className="menu gap-3 menu-horizontal">
+                <button>STATUS : {mySW.serviceWorkerStatus}</button>
                 <Social />
               </section>
             </div>
