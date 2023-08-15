@@ -8,31 +8,20 @@ interface ChestionarProps {
   chosen: Category;
   categoria: string;
   next: number;
+  isRetake: boolean;
 }
 
-type localState = { corecte: string[]; gresite: string[] };
+export type localState = { corecte: string[]; gresite: string[] };
 
 export default function Chestionar({
   chosen,
   categoria,
   next,
+  isRetake = false,
 }: ChestionarProps) {
   const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
-
   const [active, setActive] = React.useState<string[]>([]);
   const [checked, setChecked] = React.useState<boolean>(false);
-  // THIS IS HOW TO GENERATE THE URL LIST FOR THE CACHING
-  // const allTheKeys = Object.keys(catego);
-  // const allTheQuestions = allTheKeys.map((k) =>
-  //   catego[k].map((c, i) => `/categoria/${k}/${i}`)
-  // ).flat();
-  // const allTheImmages = allTheKeys.map((k) =>
-  //   catego[k].map((c, i) => {
-  //     if (c.i) return `/img/${k}/${c.i}.jpg`;
-  //   })
-  // ).flat().filter(Boolean);
-  // console.log("CATEGO", allTheQuestions);
-  // console.log("IMAGES", allTheImmages);
   useEffect(() => {
     const localState = localStorage.getItem("state");
     if (localState) setState(JSON.parse(localState));
@@ -41,7 +30,18 @@ export default function Chestionar({
   const verifica = () => {
     setChecked(true);
     const key = active.toString() === chosen.v ? "corecte" : "gresite";
-    const newState = { ...state, [key]: [...state[key], chosen.id] };
+    let newState = { ...state, [key]: [...state[key], chosen.id] };
+    if (isRetake && key === "corecte") {
+      newState = {
+        ...state,
+        gresite: [...state.gresite.filter((g) => g !== chosen.id)],
+        corecte: [...state.corecte, chosen.id],
+      };
+    }
+    if (isRetake && key === "gresite") {
+      newState = { ...state, corecte: [...new Set(state.corecte)] };
+      console.log("WAT retatke fire gresite-- ", newState);
+    }
 
     setState(newState);
     localStorage.setItem("state", JSON.stringify(newState));
@@ -74,7 +74,7 @@ export default function Chestionar({
           <p className="text-2xl text-gray-500 font-bold mb-5 first-letter:uppercase">
             {chosen.q}
           </p>
-
+          <br /> {chosen.id}
           {Object.keys(chosen.ans).map((answer) => (
             <div
               key={answer}
@@ -108,7 +108,7 @@ export default function Chestionar({
                 ${active.toString() == chosen.v ? "btn-success" : "btn-error"}
                 `}
               onClick={resetChestionar}
-              to={`/categoria/${categoria}/${next}`}
+              to={`/${isRetake ? "retake" : "categoria"}/${categoria}/${next}`}
             >
               <span className="btm-nav-label">NEXT</span>
             </Link>

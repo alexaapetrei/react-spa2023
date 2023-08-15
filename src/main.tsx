@@ -18,6 +18,11 @@ const router = createBrowserRouter([
         element: <Categoria />,
         errorElement: <ErrorPage />,
       },
+      {
+        path: "/retake/:categoria/:nr",
+        element: <Categoria />,
+        errorElement: <ErrorPage />,
+      },
     ],
   },
 ]);
