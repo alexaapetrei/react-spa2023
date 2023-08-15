@@ -1,6 +1,7 @@
 import { Outlet, Link, useOutlet, useParams } from "react-router-dom";
 import { Chose } from "./chose";
 import { Social } from "../components/social";
+import { useRef } from "react";
 export default function Root() {
   const outlet = useOutlet();
   type routeProps = {
@@ -9,9 +10,11 @@ export default function Root() {
   };
   const { categoria, nr } = useParams<routeProps>();
 
+  const menuRef = useRef(null);
+
   const changeTheme = () => {
     const current = document.documentElement.getAttribute("data-theme");
-    const themes = ["dark", "light", "cupcake", "cookie"];
+    const themes = ["cyberpunk", "dracula", "lofi", "mutedDark", "cookie"];
 
     // Get the index of the current theme.
     const currentIndex = themes.indexOf(current!);
@@ -22,6 +25,15 @@ export default function Root() {
 
     document.documentElement.setAttribute("data-theme", themes[nextIndex]);
     localStorage.setItem("currentTheme", themes[nextIndex]);
+  };
+
+  const closeMenu = () => {
+    if (menuRef.current) menuRef.current.click();
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
   };
   return (
     <>
@@ -102,13 +114,22 @@ export default function Root() {
           {outlet ? <Outlet /> : <Chose />}
         </div>
         <div className="drawer-side">
-          <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
-          <section className="menu p-4 gap-3 w-80 h-full bg-base-200">
+          <label
+            ref={menuRef}
+            htmlFor="my-drawer-3"
+            className="drawer-overlay"
+          ></label>
+          <section className="menu p-4 gap-3 w-80 h-full bg-base-200 justify-between">
             {/* Sidebar content here */}
-            <p className="font-medium align-middle">
-              Nu fi ghiertoi, zi si la alti !
-            </p>
-            <Social />
+            <Link className="btn btn-primary" onClick={closeMenu} to="/">
+              HOME
+            </Link>
+            <div className="flex flex-col gap-3">
+              <p className="font-medium align-middle">
+                Nu fi ghiertoi, zi si la alti !
+              </p>
+              <Social />
+            </div>
           </section>
         </div>
       </div>

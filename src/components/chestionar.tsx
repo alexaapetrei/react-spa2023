@@ -48,6 +48,12 @@ export default function Chestionar({
   };
 
   const resetChestionar = () => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+
     setChecked(false);
     setActive([]);
   };
@@ -55,7 +61,7 @@ export default function Chestionar({
     <>
       <div
         id="wrapper"
-        className="flex w-full flex-col sm:felx-row md:flex-row lg:flex-row "
+        className={`flex w-full flex-col sm:felx-row md:flex-row lg:flex-row rounded-md`}
       >
         {chosen.i > 0 && (
           <>
@@ -71,10 +77,9 @@ export default function Chestionar({
         )}
 
         <section className="grid flex-grow pb-[10rem]">
-          <p className="text-2xl text-gray-500 font-bold mb-5 first-letter:uppercase">
+          <p className="text-2xl text-secondary font-bold mb-5 first-letter:uppercase wrap-balance">
             {chosen.q}
           </p>
-          <br /> {chosen.id}
           {Object.keys(chosen.ans).map((answer) => (
             <div
               key={answer}
@@ -98,11 +103,30 @@ export default function Chestionar({
               />
             </div>
           ))}
+          {checked ? (
+            active.toString() == chosen.v ? (
+              <p
+                className="btn btn-success btn-lg"
+                onClick={() => alert("What, you want a cookie or something")}
+              >
+                {" "}
+                Ya did Okay{" "}
+              </p>
+            ) : (
+              <p
+                className="btn btn-error btn-lg"
+                onClick={() => alert("For real , try harder")}
+              >
+                Try again , practice makes perfect
+              </p>
+            )
+          ) : null}
         </section>
       </div>
+
       {checked ? (
         <>
-          <div className="btm-nav">
+          <div className="fixed left-3 right-3 bottom-5">
             <Link
               className={` text-white uppercase font-semibold btn btn-block
                 ${active.toString() == chosen.v ? "btn-success" : "btn-error"}
@@ -110,14 +134,14 @@ export default function Chestionar({
               onClick={resetChestionar}
               to={`/${isRetake ? "retake" : "categoria"}/${categoria}/${next}`}
             >
-              <span className="btm-nav-label">NEXT</span>
+              <span>NEXT</span>
             </Link>
           </div>
         </>
       ) : active.length > 0 ? (
-        <div className="btm-nav">
+        <div className="fixed left-3 right-3 bottom-5">
           <button onClick={verifica} className="btn btn-block btn-info ">
-            <span className="btm-nav-label">Verifica Raspunsurile</span>
+            <span>Verifica Raspunsurile</span>
           </button>
         </div>
       ) : null}

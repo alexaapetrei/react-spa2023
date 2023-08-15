@@ -7,9 +7,30 @@ export default {
   },
   daisyui: {
     themes: [
-      "light",
-      "dark",
-      "cupcake",
+      "cyberpunk",
+      "dracula",
+      "lofi",
+      {
+        mutedDark: {
+          primary: "#111827",
+
+          secondary: "#e5e7eb",
+
+          accent: "#d1d5db",
+
+          neutral: "#111827",
+
+          "base-100": "#1f2937",
+
+          info: "#60a5fa",
+
+          success: "#4ade80",
+
+          warning: "#fb923c",
+
+          error: "#ef4444",
+        },
+      },
       {
         cookie: {
           primary: "#581b8e",

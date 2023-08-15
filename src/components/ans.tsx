@@ -12,7 +12,7 @@ export default function Ans({ text, val, active, correct, checked }: AnsProps) {
   return (
     <div
       className={`p-3 rounded-md mb-3 flex gap-3 ${
-        selectedByUser ? "btn-success" : "btn-info"
+        selectedByUser ? "btn-primary" : "btn-secondary"
       }`}
     >
       <div className="avatar placeholder">
@@ -27,7 +27,7 @@ export default function Ans({ text, val, active, correct, checked }: AnsProps) {
         </div>
       </div>
 
-      <span className="text">{text}</span>
+      <span className={` wrap-balance `}>{text}</span>
     </div>
   );
 }
