@@ -11,23 +11,22 @@ const ErrorPage: React.FC = () => {
   console.error(error);
 
   return (
-    <div className="px-4 py-8 mx-auto bg-orange-500">
-      <div className="max-w-screen-md mx-auto flex flex-col items-center justify-center">
-        <img
-          data-fresh-disable-lock
-          className="my-6"
-          src="/bear2023.svg"
-          width="128"
-          height="128"
-          alt="Dang Bear"
-        />
-        <h1 className="text-4xl font-bold">
+    <div className="border-base-300 bg-base-100 rounded-b-box rounded-tr-box flex min-h-[6rem] min-w-[10rem] flex-wrap items-center justify-center gap-2 overflow-x-hidden border bg-cover bg-top p-4 m-4">
+      <div className="card w-69 bg-base-100 shadow-xl">
+        <div className="card-body">
+          <h2 className="card-title">Probabil a explodat ceva</h2>
           <i>{error?.statusText || error?.message}</i>
-        </h1>
-        <p className="my-4">Not here bro</p>
-        <Link to="/" className="underline">
-          Go home
-        </Link>
+          <p>Stai chill si apasa butonu</p>
+
+          <div className="card-actions justify-end">
+            <Link to="/" className="btn btn-block btn-warning">
+              Go home
+            </Link>
+          </div>
+        </div>
+        <figure>
+          <img src="/bear2023.svg" alt="Bravo" />
+        </figure>
       </div>
     </div>
   );

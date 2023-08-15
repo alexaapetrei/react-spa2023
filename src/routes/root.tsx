@@ -1,13 +1,20 @@
 import { Outlet, Link, useOutlet, useParams } from "react-router-dom";
 import { Chose } from "./chose";
 import { Social } from "../components/social";
-import { useRef, ElementRef } from "react";
+import { useRef, ElementRef, useEffect, useState } from "react";
 export default function Root() {
   const outlet = useOutlet();
   type routeProps = {
     categoria: string;
     nr: string;
   };
+
+  interface ServiceWorkerMessageEvent extends MessageEvent {
+    data: {
+      type: string;
+    };
+  }
+
   const { categoria, nr } = useParams<routeProps>();
 
   const menuRef = useRef<ElementRef<"label">>(null);
@@ -35,6 +42,51 @@ export default function Root() {
       behavior: "smooth",
     });
   };
+
+  const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(
+    null
+  );
+
+  function handleServiceWorkerMessage(event: ServiceWorkerMessageEvent) {
+    console.log("Received a message from service worker:", event.data);
+    if (event.data && event.data.type === "UPDATE_AVAILABLE") {
+      setUpdateAvailable(true);
+      // If serviceWorker.controller is defined, there is a service worker controlling the page
+      if (navigator.serviceWorker.controller) {
+        const sw = navigator.serviceWorker.controller;
+        setWaitingWorker(sw);
+      }
+    }
+  }
+  useEffect(() => {
+    // Add an event listener for messages from service workers
+    navigator.serviceWorker.addEventListener(
+      "message",
+      handleServiceWorkerMessage
+    );
+
+    // Clean up the event listener on component unmount
+    return () => {
+      navigator.serviceWorker.removeEventListener(
+        "message",
+        handleServiceWorkerMessage
+      );
+    };
+  }, []);
+
+  const handleUpdateClick = () => {
+    if (waitingWorker) {
+      // Send a message to the waiting service worker to skip the waiting phase
+      waitingWorker.postMessage({ type: "SKIP_WAITING" });
+      waitingWorker.addEventListener("statechange", (event: Event) => {
+        if ((event.target as ServiceWorker).state === "activated") {
+          window.location.reload();
+        }
+      });
+    }
+  };
+
   return (
     <>
       <div className="drawer">
@@ -60,7 +112,17 @@ export default function Root() {
               </label>
             </div>
             <div className="flex-1 px-2 mx-2">
-              <Link className=" navbar-end" to={"/"}>
+              <Link
+                className=" navbar-end"
+                onClick={() =>
+                  window.scrollTo({
+                    top: 0,
+                    left: 0,
+                    behavior: "smooth",
+                  })
+                }
+                to={"/"}
+              >
                 <img
                   className="avatar"
                   src="/bear2023.svg"
@@ -69,6 +131,12 @@ export default function Root() {
                 />
               </Link>
               <div className="gap-5">
+                {updateAvailable && (
+                  <div>
+                    <p>An update is available!</p>
+                    <button onClick={handleUpdateClick}>Update Now</button>
+                  </div>
+                )}
                 {categoria ? (
                   <h2>{`Categoria ${categoria} - intrebarea ${nr}`}</h2>
                 ) : (
@@ -78,7 +146,6 @@ export default function Root() {
             </div>
             <div className="flex-none hidden lg:block">
               <section className="menu gap-3 menu-horizontal">
-                <button>STATUS : {mySW.serviceWorkerStatus}</button>
                 <Social />
               </section>
             </div>
