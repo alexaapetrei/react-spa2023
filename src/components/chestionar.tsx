@@ -45,9 +45,6 @@ export default function Chestionar({
 
     setState(newState);
     localStorage.setItem("state", JSON.stringify(newState));
-    console.log(
-      active.toString() === chosen.v ? "RIGHT ___ YAY" : "WRONG nooooo "
-    );
   };
 
   const resetChestionar = () => {
@@ -56,66 +53,74 @@ export default function Chestionar({
   };
   return (
     <>
-      <h2 className="text-2xl text-yellow-200 font-bold">
-        Categoria : {categoria}
-      </h2>
-
-      {chosen.i > 0 && (
-        <img
-          data-fresh-disable-lock
-          src={`/img/${categoria}/${chosen.i}.jpg`}
-        ></img>
-      )}
-
-      <p className="text-2xl text-gray-500 font-bold">{chosen.q}</p>
-      {Object.keys(chosen.ans).map((answer) => (
-        <div
-          key={answer}
-          onClick={() => {
-            checked
-              ? null
-              : setActive(
-                  (active.includes(answer)
-                    ? active.filter((a) => a !== answer)
-                    : [...active, answer]
-                  ).sort()
-                );
-          }}
-        >
-          <Ans
-            text={chosen.ans[answer]}
-            val={answer}
-            checked={checked}
-            correct={chosen.v}
-            active={active}
-          />
-        </div>
-      ))}
-
-      <div className="flex flex-row gap-3 my-3 justify-end">
-        {checked ? (
+      <div
+        id="wrapper"
+        className="flex w-full flex-col sm:felx-row md:flex-row lg:flex-row "
+      >
+        {chosen.i > 0 && (
           <>
+            <section className="grid flex-grow items-center justify-center">
+              <img
+                data-fresh-disable-lock
+                className=""
+                src={`/img/${categoria}/${chosen.i}.jpg`}
+              ></img>
+            </section>
+            <div className="divider md:divider-horizontal"></div>
+          </>
+        )}
+
+        <section className="grid flex-grow pb-[10rem]">
+          <p className="text-2xl text-gray-500 font-bold mb-5 first-letter:uppercase">
+            {chosen.q}
+          </p>
+
+          {Object.keys(chosen.ans).map((answer) => (
+            <div
+              key={answer}
+              onClick={() => {
+                checked
+                  ? null
+                  : setActive(
+                      (active.includes(answer)
+                        ? active.filter((a) => a !== answer)
+                        : [...active, answer]
+                      ).sort()
+                    );
+              }}
+            >
+              <Ans
+                text={chosen.ans[answer]}
+                val={answer}
+                checked={checked}
+                correct={chosen.v}
+                active={active}
+              />
+            </div>
+          ))}
+        </section>
+      </div>
+      {checked ? (
+        <>
+          <div className="btm-nav">
             <Link
-              className={`p-5 rounded-md  basis-1/2
-                ${active.toString() == chosen.v ? "bg-green-300" : "bg-red-400"}
+              className={` text-white uppercase font-semibold btn btn-block
+                ${active.toString() == chosen.v ? "btn-success" : "btn-error"}
                 `}
               onClick={resetChestionar}
               to={`/categoria/${categoria}/${next}`}
             >
-              Next
+              <span className="btm-nav-label">NEXT</span>
             </Link>
-          </>
-        ) : active.length > 0 ? (
-          <button
-            className=" p-5 rounded-md bg-pink-500 basis-1/2"
-            onClick={verifica}
-          >
-            Verifica Raspunsurile
+          </div>
+        </>
+      ) : active.length > 0 ? (
+        <div className="btm-nav">
+          <button onClick={verifica} className="btn btn-block btn-info ">
+            <span className="btm-nav-label">Verifica Raspunsurile</span>
           </button>
-        ) : (
-          <></>
-        )}
-      </div>
+        </div>
+      ) : null}
     </>
   );
 }

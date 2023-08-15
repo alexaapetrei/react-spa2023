@@ -1,19 +1,37 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useOutlet, useParams } from "react-router-dom";
+import { Chose } from "./chose";
 export default function Root() {
+  const outlet = useOutlet();
+  type routeProps = {
+    categoria: string;
+    nr: string;
+  };
+  const { categoria, nr } = useParams<routeProps>();
   return (
     <>
-      <div className="flex justify-center  bg-black text-white font-mono text-2xl gap-6 py-5">
-        <img
-          src="/bear2023.svg"
-          alt="alive and kicking"
-          width="60px"
-          height="60px"
-        />
-        <h2>Hello ther go here -&gt;</h2>
-        <Link to={"/chose"}>CHOSE SOMETHING</Link>
+      <div className="navbar bg-neutral text-neutral-content">
+        <div className="navbar-start">
+          <Link className=" navbar-end" to={"/"}>
+            <img
+              className="avatar"
+              src="/bear2023.svg"
+              alt="alive and kicking"
+              width="50px"
+            />
+          </Link>
+        </div>
+        <div className="navbar-center hidden lg:flex">
+          <h2>Stai focusat !</h2>
+        </div>
+        <div className="navbar-end gap-5">
+          {categoria ? (
+            <h2>{`Categoria ${categoria} - intrebarea ${nr}`}</h2>
+          ) : (
+            <h2>Hai Salut, Baga si invata !</h2>
+          )}
+        </div>
       </div>
-
-      <Outlet />
+      {outlet ? <Outlet /> : <Chose />}
     </>
   );
 }
