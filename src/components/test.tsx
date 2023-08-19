@@ -1,5 +1,5 @@
 import type { Category } from "../data/useCatego.tsx";
-import TestChoice from "./test-choice.tsx";
+import Ans from "./test-choice.tsx";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -64,9 +64,14 @@ export default function Test({
   };
   return (
     <>
-      <h2 className="badge badge-primary float-right">{`${t(
-        "common.category"
-      )} ${categoria} - ${t("common.question")} ${next - 1}`}</h2>
+      <section className="flex gap-3 justify-end">
+        <b className="badge badge-primary">
+          {t("common.category")} {categoria}
+        </b>
+        <b className="badge badge-primary">
+          {t("common.question")} {next - 1}
+        </b>
+      </section>
       <div
         id="wrapper"
         className={`flex w-full flex-col sm:felx-row md:flex-row lg:flex-row rounded-md`}
@@ -102,7 +107,7 @@ export default function Test({
                     );
               }}
             >
-              <TestChoice
+              <Ans
                 text={chosen.ans[answer]}
                 val={answer}
                 checked={checked}
