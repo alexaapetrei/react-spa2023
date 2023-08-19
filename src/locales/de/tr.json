@@ -1,0 +1,29 @@
+{
+  "root": {
+    "updateAvailable": "Ein Update ist verfügbar!",
+    "updateNow": "Jetzt aktualisieren"
+  },
+  "common": {
+    "category": "Kategorie",
+    "question": "Frage",
+    "encourage": "Du kannst es schaffen, lerne!",
+    "disourage": "Sei kein Idiot, teile!",
+    "reset": "zurücksetzen",
+    "right": "richtig",
+    "wrong": "falsch",
+    "next": "weiter",
+    "home": "Zuhause",
+    "share": "teilen"
+  },
+  "test": {
+    "done": "Gute Arbeit, du hast den Satz fertiggestellt. Bearbeite nun die Fragen, bei denen du Fehler gemacht hast",
+    "congrats": "Tolle Arbeit, es braucht viel, um sich so lange zu konzentrieren",
+    "startRetest": "Beginne mit dem fehlerhaften Fragen-Set",
+    "stillSomeLeft": "Gut, du hast aber immer noch ein paar",
+    "finished": "Erstaunlich, du hast alle Fragen ohne Fehler beantwortet",
+    "tip": "Denk daran, Fortschritt ist besser als Perfektion",
+    "wrong": "Du hast es versucht, du kannst dich noch mehr anstrengen",
+    "right": "korrekt",
+    "check": "Antworten überprüfen"
+  }
+}

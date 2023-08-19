@@ -1,0 +1,29 @@
+{
+  "root": {
+    "updateAvailable": "Elérhető egy frissítés!",
+    "updateNow": "Frissítés most"
+  },
+  "common": {
+    "category": "kategória",
+    "question": "kérdés",
+    "encourage": "Megtudod csinálni, tanulj!",
+    "disourage": "Ne légy bunkó, oszd meg!",
+    "reset": "újraindítás",
+    "right": "helyes",
+    "wrong": "hibás",
+    "next": "következő",
+    "home": "otthon",
+    "share": "megosztás"
+  },
+  "test": {
+    "done": "Jó munka, befejezted a készletet, most ismételd meg a hibás kérdéseket",
+    "congrats": "Nagyszerű munka, sok koncentrációt igényel ilyen hosszú ideig",
+    "startRetest": "Kezdés a hibás kérdéseken",
+    "stillSomeLeft": "Szép, még néhány van hátra",
+    "finished": "Fantasztikus, minden kérdést hiba nélkül befejeztél",
+    "tip": "Emlékezz, a fejlődés jobb, mint a tökéletesség",
+    "wrong": "Próbálkoztál, még jobban is tudsz próbálkozni",
+    "right": "helyes",
+    "check": "Válaszok ellenőrzése"
+  }
+}

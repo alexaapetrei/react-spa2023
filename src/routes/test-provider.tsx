@@ -1,13 +1,18 @@
 import { Link, useLocation, useParams } from "react-router-dom";
-import catego from "../../public/data/catego";
-import Chestionar from "../components/chestionar";
-import type { localState } from "../components/chestionar";
+import useCatego from "../data/useCatego";
+import Test from "../components/test";
+import type { localState } from "../components/test";
+import { useTranslation } from "react-i18next";
 
 type routeProps = {
   categoria: string;
   nr: string;
 };
-export default function Categoria() {
+export default function TestProvider() {
+  const { t } = useTranslation();
+
+  const catego = useCatego();
+
   const route = useLocation();
   const isRetake = route.pathname.split("/").filter(Boolean)[0] === "retake";
   const { categoria = "b", nr = "0" } = useParams<routeProps>();
@@ -30,13 +35,11 @@ export default function Categoria() {
       <div className="border-base-300 bg-base-100 rounded-b-box rounded-tr-box flex min-h-[6rem] min-w-[10rem] flex-wrap items-center justify-center gap-2 overflow-x-hidden border bg-cover bg-top p-4 m-4">
         <div className="card w-69 bg-base-100 shadow-xl">
           <div className="card-body">
-            <h2 className="card-title">
-              Ai terminat setul , acuma poti sa refaci ce ai gresit
-            </h2>
-            <p>Chair e super fain ca ai putut sa te concentrezi atat !</p>
+            <h2 className="card-title">{t("test.done")}</h2>
+            <p>{t("test.congrats")}</p>
             <div className="card-actions justify-end">
               <Link className="btn btn-primary" to={`/retake/${categoria}/0`}>
-                incepe retestarea
+                {t("test.startRetest")}
               </Link>
             </div>
           </div>
@@ -54,14 +57,14 @@ export default function Categoria() {
           <div className="border-base-300 bg-base-100 rounded-b-box rounded-tr-box flex min-h-[6rem] min-w-[10rem] flex-wrap items-center justify-center gap-2 overflow-x-hidden border bg-cover bg-top p-4 m-4">
             <div className="card w-69 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Bravo , dar inca mai ai cateva</h2>
-                <p>Chair e super fain ca ai putut sa te concentrezi atat !</p>
+                <h2 className="card-title">{t("test.stillSomeLeft")}</h2>
+                <p>{t("test.congrats")}</p>
                 <div className="card-actions justify-end">
                   <Link
                     className="btn btn-primary"
                     to={`/retake/${categoria}/0`}
                   >
-                    incepe retestarea
+                    {t("test.startRetest")}
                   </Link>
                 </div>
               </div>
@@ -74,12 +77,8 @@ export default function Categoria() {
           <div className="border-base-300 bg-base-100 rounded-b-box rounded-tr-box flex min-h-[6rem] min-w-[10rem] flex-wrap items-center justify-center gap-2 overflow-x-hidden border bg-cover bg-top p-4 m-4">
             <div className="card w-69 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">
-                  {" "}
-                  Felicitari ai terminat absolut tot setul de intrebari, poti sa
-                  incepi din nou :)
-                </h2>
-                <p>Repetitia e mama invataturii , bana inca o data</p>
+                <h2 className="card-title">{t("test.finished")}</h2>
+                <p> {t("test.tip")}</p>
                 <div className="card-actions justify-end">
                   <Link
                     className="btn btn-block btn-warning"
@@ -98,7 +97,8 @@ export default function Categoria() {
                       localStorage.setItem("state", JSON.stringify(catRemoved));
                     }}
                   >
-                    RESET Categoia {categoria.toLocaleLowerCase()}
+                    {t("common.reset")} {t("common.category")}{" "}
+                    {categoria.toLocaleLowerCase()}
                   </Link>
                 </div>
               </div>
@@ -113,7 +113,7 @@ export default function Categoria() {
   /// flex lg:flex-row sm:flex-col
   return (
     <div className=" m-1 lg:m-5">
-      <Chestionar
+      <Test
         next={next}
         chosen={chosen}
         categoria={categoria}

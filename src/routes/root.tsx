@@ -1,21 +1,19 @@
-import { Outlet, Link, useOutlet, useParams } from "react-router-dom";
+import { Outlet, Link, useOutlet } from "react-router-dom";
 import { Chose } from "./chose";
 import { Social } from "../components/social";
 import { useRef, ElementRef, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { langs } from "../i18n";
+
 export default function Root() {
+  const { t, i18n } = useTranslation();
   const outlet = useOutlet();
-  type routeProps = {
-    categoria: string;
-    nr: string;
-  };
 
   interface ServiceWorkerMessageEvent extends MessageEvent {
     data: {
       type: string;
     };
   }
-
-  const { categoria, nr } = useParams<routeProps>();
 
   const menuRef = useRef<ElementRef<"label">>(null);
 
@@ -94,7 +92,7 @@ export default function Root() {
         <div className="drawer-content flex flex-col">
           {/* Navbar */}
           <div className="w-full navbar bg-base-300">
-            <div className="flex-none lg:hidden">
+            <div className="flex-none md:hidden">
               <label htmlFor="my-drawer-3" className="btn btn-square btn-ghost">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -133,23 +131,45 @@ export default function Root() {
               <div className="gap-5">
                 {updateAvailable && (
                   <div>
-                    <p>An update is available!</p>
-                    <button onClick={handleUpdateClick}>Update Now</button>
+                    <p>{t("root.updateAvailable")}</p>
+                    <button onClick={handleUpdateClick}>
+                      {t("root.updateNow")}
+                    </button>
                   </div>
-                )}
-                {categoria ? (
-                  <h2>{`Categoria ${categoria} - intrebarea ${nr}`}</h2>
-                ) : (
-                  <h2>Hai Salut, Baga si invata !</h2>
                 )}
               </div>
             </div>
-            <div className="flex-none hidden lg:block">
-              <section className="menu gap-3 menu-horizontal">
-                <Social />
-              </section>
+            <div className="flex-none hidden md:block">
+              <div className="dropdown dropdown-end">
+                <label tabIndex={0} className="btn m-1">
+                  {t("common.share")}
+                </label>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                >
+                  <Social />
+                </ul>
+              </div>
             </div>
-            <div className="flex-none block">
+            <div className="flex">
+              <div key={i18n.language} className="dropdown dropdown-end">
+                <label tabIndex={0} className="btn m-1">
+                  {i18n.language}
+                </label>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                >
+                  {Object.keys(langs).map((c) => (
+                    <li key={c + "_lang"}>
+                      <button onClick={() => i18n.changeLanguage(c)}>
+                        {`${langs[c]}`}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <ul className="menu menu-horizontal">
                 <li>
                   <label className="swap swap-rotate">
@@ -190,11 +210,11 @@ export default function Root() {
           <section className="menu p-4 gap-3 w-80 h-full bg-base-200 justify-between">
             {/* Sidebar content here */}
             <Link className="btn btn-primary" onClick={closeMenu} to="/">
-              HOME
+              {t("common.home")}
             </Link>
             <div className="flex flex-col gap-3">
               <p className="font-medium align-middle">
-                Nu fi ghiertoi, zi si la alti !
+                {t("common.disourage")}
               </p>
               <Social />
             </div>

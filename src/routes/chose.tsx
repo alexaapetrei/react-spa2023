@@ -1,10 +1,13 @@
-import catego from "../../public/data/catego";
+import useCatego from "../data/useCatego";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { useEffect, useState } from "react";
 type localState = { corecte: string[]; gresite: string[] };
 
 export function Chose() {
+  const { t } = useTranslation();
+  const catego = useCatego();
   const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
 
   useEffect(() => {
@@ -20,7 +23,8 @@ export function Chose() {
   }, []);
 
   return (
-    <section className="bg-neutral p-11 rounded-lg m-5">
+    <section className="bg-neutral-content p-11 rounded-lg m-5">
+      <h2 className="text-primary">{t("common.encourage")}</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-4">
         {Object.keys(catego).map((c) => {
           const corecteCount = state.corecte.filter((q) =>
@@ -40,11 +44,15 @@ export function Chose() {
               {c.toUpperCase()}
               <progress
                 className="progress progress-secondary w-full"
-                title={`Categoria ${c} - Corecte: ${corecteCount} Gresite : ${gresiteCount}`}
+                title={`${t("common.category")} ${c} - ${t(
+                  "common.right"
+                )} ${corecteCount} ${t("common.wrong")} ${gresiteCount}`}
                 value={totalCount}
                 max={catego[c].length}
               >
-                {`Categoria ${c} - Corecte: ${corecteCount} Gresite : ${gresiteCount}`}
+                {`${t("common.category")} ${c} - ${t(
+                  "common.right"
+                )} ${corecteCount} ${t("common.wrong")} ${gresiteCount}`}
               </progress>
             </Link>
           );
@@ -62,7 +70,7 @@ export function Chose() {
             setState({ corecte: [], gresite: [] });
           }}
         >
-          RESET
+          {t("common.reset")}
         </button>
       </div>
     </section>

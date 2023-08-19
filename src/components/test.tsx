@@ -1,24 +1,25 @@
-import type { Category } from "../../public/data/catego";
-import Ans from "../components/ans.tsx";
+import type { Category } from "../data/useCatego.tsx";
+import TestChoice from "./test-choice.tsx";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-// import catego from "../../public/data/catego";
+import { useTranslation } from "react-i18next";
 
-interface ChestionarProps {
+type ChestionarProps = {
   chosen: Category;
   categoria: string;
   next: number;
   isRetake: boolean;
-}
+};
 
 export type localState = { corecte: string[]; gresite: string[] };
 
-export default function Chestionar({
+export default function Test({
   chosen,
   categoria,
   next,
   isRetake = false,
 }: ChestionarProps) {
+  const { t } = useTranslation();
   const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
   const [active, setActive] = React.useState<string[]>([]);
   const [checked, setChecked] = React.useState<boolean>(false);
@@ -63,16 +64,19 @@ export default function Chestionar({
   };
   return (
     <>
+      <h2 className="badge badge-primary float-right">{`${t(
+        "common.category"
+      )} ${categoria} - ${t("common.question")} ${next - 1}`}</h2>
       <div
         id="wrapper"
         className={`flex w-full flex-col sm:felx-row md:flex-row lg:flex-row rounded-md`}
       >
         {chosen.i > 0 && (
           <>
-            <section className="grid flex-grow items-center justify-center">
+            <section className="grid basis-1/2 items-center justify-center min-w-[50vh]">
               <img
                 data-fresh-disable-lock
-                className=""
+                className="lg:w-[50vh]"
                 src={`/img/${categoria}/${chosen.i}.jpg`}
               ></img>
             </section>
@@ -80,7 +84,7 @@ export default function Chestionar({
           </>
         )}
 
-        <section className="grid flex-grow pb-[10rem]">
+        <section className="grid flex-grow lg:basis-1/2 pb-[10rem]">
           <p className="text-2xl text-secondary font-bold mb-5 first-letter:uppercase wrap-balance">
             {chosen.q}
           </p>
@@ -98,7 +102,7 @@ export default function Chestionar({
                     );
               }}
             >
-              <Ans
+              <TestChoice
                 text={chosen.ans[answer]}
                 val={answer}
                 checked={checked}
@@ -113,15 +117,14 @@ export default function Chestionar({
                 className="btn btn-success btn-lg"
                 onClick={() => alert("What, you want a cookie or something")}
               >
-                {" "}
-                Ya did Okay{" "}
+                {t("test.right")}
               </p>
             ) : (
               <p
                 className="btn btn-error btn-lg"
                 onClick={() => alert("For real , try harder")}
               >
-                Try again , practice makes perfect
+                {t("test.wrong")}
               </p>
             )
           ) : null}
@@ -138,14 +141,14 @@ export default function Chestionar({
               onClick={resetChestionar}
               to={`/${isRetake ? "retake" : "categoria"}/${categoria}/${next}`}
             >
-              <span>NEXT</span>
+              <span>{t("common.next")}</span>
             </Link>
           </div>
         </>
       ) : active.length > 0 ? (
         <div className="fixed left-3 right-3 bottom-5">
           <button onClick={verifica} className="btn btn-block btn-info ">
-            <span>Verifica Raspunsurile</span>
+            <span>{t("test.check")}</span>
           </button>
         </div>
       ) : null}

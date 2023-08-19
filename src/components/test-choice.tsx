@@ -6,7 +6,13 @@ type AnsProps = {
   checked: boolean;
 };
 
-export default function Ans({ text, val, active, correct, checked }: AnsProps) {
+export default function TestChoice({
+  text,
+  val,
+  active,
+  correct,
+  checked,
+}: AnsProps) {
   const tick = checked ? (correct?.includes(val) ? "✔️" : "❌") : "🤔";
   const selectedByUser = active.includes(val);
   return (

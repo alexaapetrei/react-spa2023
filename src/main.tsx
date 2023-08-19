@@ -1,11 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./i18n";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import ErrorPage from "./errorPage";
 import Root from "./routes/root";
-import Categoria from "./routes/categoria";
+import TestProvider from "./routes/test-provider";
 
 const router = createBrowserRouter([
   {
@@ -15,12 +17,12 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/categoria/:categoria/:nr",
-        element: <Categoria />,
+        element: <TestProvider />,
         errorElement: <ErrorPage />,
       },
       {
         path: "/retake/:categoria/:nr",
-        element: <Categoria />,
+        element: <TestProvider />,
         errorElement: <ErrorPage />,
       },
     ],
@@ -29,6 +31,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <I18nextProvider i18n={i18n}>
+      <RouterProvider router={router} />
+    </I18nextProvider>
   </React.StrictMode>
 );

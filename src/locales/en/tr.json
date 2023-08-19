@@ -1,0 +1,29 @@
+{
+  "root": {
+    "updateAvailable": "An update is available!",
+    "updateNow": "Update Now"
+  },
+  "common": {
+    "category": "category",
+    "question": "question",
+    "encourage": "You can do it, learn!",
+    "disourage": "Dont be a duche, share ",
+    "reset": "reset",
+    "right": "right",
+    "wrong": "wrong",
+    "next": "next",
+    "home": "home",
+    "share": "share"
+  },
+  "test": {
+    "done": "Good job , you finished the set, now redo the questions you failed",
+    "congrats": "Awesome jon, it takes a lot to focus for so long",
+    "startRetest": "Start on failed question set",
+    "stillSomeLeft": "Nice, you still have a few though",
+    "finished": "Amazing, you completed all the questions without any mistakes",
+    "tip": "Remember, progress is better than perfection",
+    "wrong": "You tryed , you can try harder",
+    "right": "correct",
+    "check": "Check Answers"
+  }
+}
