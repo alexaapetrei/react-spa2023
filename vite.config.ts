@@ -38,22 +38,25 @@ export default defineConfig({
         //   /\.map$/, 
         //   /^manifest.*\.js?$/
         // ],
-        // runtimeCaching: [
-        //   {
-        //     urlPattern: /api/,
-        //     handler: 'NetworkFirst',
-        //     options: {
-        //       cacheName: 'api-cache',
-        //       expiration: {
-        //         maxEntries: 200,
-        //         maxAgeSeconds: 7 * 24 * 60 * 60, // 1 week
-        //       },
-        //       broadcastUpdate: {
-        //         channelName: 'api-update-channel',
-        //       },
-        //     },
-        //   },
-        // ],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/test\.urssur\.com\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'app-update-cache',
+              expiration: {
+                maxEntries: 800,
+                maxAgeSeconds: 7 * 24 * 60 * 60, // 1 week
+              },
+              broadcastUpdate: {
+                channelName: 'app-update-channel',
+                options: { // Add this object
+                  headersToCheck: [], // List headers to check for changes (if needed)
+                }
+              },
+            },
+          },
+        ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [
           // Exclude URLs starting with /api/

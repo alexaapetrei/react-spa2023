@@ -9,6 +9,23 @@ import ErrorPage from "./errorPage";
 import Root from "./routes/root";
 import TestProvider from "./routes/test-provider";
 
+import { Workbox } from "workbox-window";
+
+if ("serviceWorker" in navigator) {
+  const wb = new Workbox("/sw.js");
+
+  wb.addEventListener("installed", (event) => {
+    if (!event.isUpdate) {
+      console.log("Service worker installed for the first time!");
+    } else {
+      console.log("Service worker updated!");
+      window.location.reload(); // Reload the page to use the updated assets
+    }
+  });
+
+  wb.register();
+}
+
 const router = createBrowserRouter([
   {
     path: "/",

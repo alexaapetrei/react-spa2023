@@ -10,7 +10,7 @@ export function Chose() {
 
   return (
     <section className="bg-neutral-content p-11 rounded-lg m-5">
-      <h2 className="text-primary">{t("common.encourage")}</h2>
+      <h2 className="text-primary text-2xl">{t("common.encourage")}</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-4">
         {Object.keys(catego).map((c) => {
           const corecteCount = state.corecte.filter((q) =>

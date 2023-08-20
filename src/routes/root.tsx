@@ -67,16 +67,6 @@ export default function Root() {
                   width="50px"
                 />
               </Link>
-              <div className="gap-5">
-                {updateAvailable && (
-                  <div>
-                    <p>{t("root.updateAvailable")}</p>
-                    <button onClick={handleUpdateClick}>
-                      {t("root.updateNow")}
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
             <div className="flex-none hidden md:block">
               <div className="dropdown dropdown-end">
@@ -160,6 +150,35 @@ export default function Root() {
           </section>
         </div>
       </div>
+
+      {updateAvailable && (
+        <div className="fixed left-3 right-3 bottom-5">
+          <div className="alert">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              className="stroke-info shrink-0 w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span>{t("root.updateAvailable")}</span>
+            <div>
+              <button
+                onClick={handleUpdateClick}
+                className="btn btn-sm btn-primary"
+              >
+                {t("root.updateNow")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
