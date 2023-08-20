@@ -9,16 +9,16 @@ export default defineConfig({
   server: {
     port: 3030
   },
-  build: {
-    assetsInlineLimit: 0,
-    rollupOptions: {
-      output: {
-        entryFileNames: `[name].js`,
-        chunkFileNames: `[name].js`,
-        assetFileNames: `[name].[ext]`
-      }
-    },
-  },
+  // build: {
+  //   assetsInlineLimit: 0,
+  //   rollupOptions: {
+  //     output: {
+  //       entryFileNames: `[name].js`,
+  //       chunkFileNames: `[name].js`,
+  //       assetFileNames: `[name].[ext]`
+  //     }
+  //   },
+  // },
   plugins: [
     react(),
     VitePWA({
@@ -26,8 +26,8 @@ export default defineConfig({
       includeAssets: ['favicon.img', 'bear2023.svg', 'img/*', 'img/a/*', 'img/b/*', 'img/c/*', 'img/d/*', 'data/*'],
       workbox: {
         cacheId: `urs-sur-${timestamp}`,
-        skipWaiting: true,
-        clientsClaim: true,
+        // skipWaiting: true,
+        // clientsClaim: true,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         // swDest: 'dist/sw.js',
         // importScripts: [

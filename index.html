@@ -21,6 +21,15 @@
     <meta name="msapplication-TileColor" content="#82ff89" />
     <meta name="theme-color" content="#82ff89" />
     <link rel="icon" href="/bear2023.svg" />
+    <script>
+      window.onerror = function (message, source, lineno, colno, error) {
+        // Force refresh the page
+        location.reload(true);
+
+        // This will prevent the browser default behavior of logging the error
+        return true;
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>
