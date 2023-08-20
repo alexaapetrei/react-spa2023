@@ -48,6 +48,7 @@ export default function Root() {
 
   function handleServiceWorkerMessage(event: ServiceWorkerMessageEvent) {
     console.log("WAT - Received a message from service worker:", event.data);
+
     if (event.data && event.data.type === "UPDATE_AVAILABLE") {
       setUpdateAvailable(true);
       console.log("WAT - UPDATE_AVAILABLE -- whatever that means");

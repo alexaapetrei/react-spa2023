@@ -9,6 +9,16 @@ export default defineConfig({
   server: {
     port: 3030
   },
+  build: {
+    assetsInlineLimit: 0,
+    rollupOptions: {
+      output: {
+        entryFileNames: `[name].js`,
+        chunkFileNames: `[name].js`,
+        assetFileNames: `[name].[ext]`
+      }
+    },
+  },
   plugins: [
     react(),
     VitePWA({
