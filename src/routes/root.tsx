@@ -1,36 +1,19 @@
 import { Outlet, Link, useOutlet } from "react-router-dom";
 import { Chose } from "./chose";
 import { Social } from "../components/social";
-import { useRef, ElementRef, useEffect, useState } from "react";
+import { useRef, ElementRef } from "react";
 import { useTranslation } from "react-i18next";
 import { langs } from "../i18n";
+import useTheme from "../hooks/useTheme";
+import useServiceWorker from "../hooks/useServiceWorker";
 
 export default function Root() {
   const { t, i18n } = useTranslation();
   const outlet = useOutlet();
-
-  interface ServiceWorkerMessageEvent extends MessageEvent {
-    data: {
-      type: string;
-    };
-  }
+  const changeTheme = useTheme();
+  const { updateAvailable, handleUpdateClick } = useServiceWorker();
 
   const menuRef = useRef<ElementRef<"label">>(null);
-
-  const changeTheme = () => {
-    const current = document.documentElement.getAttribute("data-theme");
-    const themes = ["cyberpunk", "dracula", "lofi", "mutedDark", "cookie"];
-
-    // Get the index of the current theme.
-    const currentIndex = themes.indexOf(current!);
-
-    // Calculate the index of the next theme. If current is not in the list, default to 0.
-    const nextIndex =
-      currentIndex === -1 ? 0 : (currentIndex + 1) % themes.length;
-
-    document.documentElement.setAttribute("data-theme", themes[nextIndex]);
-    localStorage.setItem("currentTheme", themes[nextIndex]);
-  };
 
   const closeMenu = () => {
     if (menuRef.current) menuRef.current.click();
@@ -39,63 +22,6 @@ export default function Root() {
       left: 0,
       behavior: "smooth",
     });
-  };
-
-  const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
-  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(
-    null
-  );
-
-  function handleServiceWorkerMessage(event: ServiceWorkerMessageEvent) {
-    console.log("WAT - Received a message from service worker:", event.data);
-
-    if (event.data && event.data.type === "UPDATE_AVAILABLE") {
-      setUpdateAvailable(true);
-      console.log("WAT - UPDATE_AVAILABLE -- whatever that means");
-      // If serviceWorker.controller is defined, there is a service worker controlling the page
-      if (navigator.serviceWorker.controller) {
-        const sw = navigator.serviceWorker.controller;
-        setWaitingWorker(sw);
-        console.log("WAT - is there a service worker controller ?");
-      }
-    }
-  }
-  useEffect(() => {
-    //check for theme
-    const currentTheme = localStorage.getItem("currentTheme") || "cookie";
-    document.documentElement.setAttribute("data-theme", currentTheme);
-
-    // Add an event listener for messages from service workers
-    navigator.serviceWorker.addEventListener(
-      "message",
-      handleServiceWorkerMessage
-    );
-    console.log(
-      "WAT- this useEffect that registeres the listener works ... right  "
-    );
-
-    // Clean up the event listener on component unmount
-    return () => {
-      navigator.serviceWorker.removeEventListener(
-        "message",
-        handleServiceWorkerMessage
-      );
-    };
-  }, []);
-
-  const handleUpdateClick = () => {
-    if (waitingWorker) {
-      console.log("WAT- is a waitingWorker ? ? ");
-
-      // Send a message to the waiting service worker to skip the waiting phase
-      waitingWorker.postMessage({ type: "SKIP_WAITING" });
-      waitingWorker.addEventListener("statechange", (event: Event) => {
-        if ((event.target as ServiceWorker).state === "activated") {
-          console.log("WAT- is this even getting into the statechahged ? ");
-          window.location.reload();
-        }
-      });
-    }
   };
 
   return (
