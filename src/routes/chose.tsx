@@ -45,6 +45,20 @@ export function Chose() {
         })}
 
         <button
+          className="btn btn-block btn-info"
+          onClick={() => {
+            window.scrollTo({
+              top: 0,
+              left: 0,
+              behavior: "smooth",
+            });
+            window.location.reload();
+          }}
+        >
+          {t("root.updateNow")}
+        </button>
+
+        <button
           className="btn btn-block btn-warning"
           onClick={() => {
             window.scrollTo({
