@@ -64,7 +64,7 @@ export default function Test({
   };
   return (
     <>
-      <section className="flex gap-3 justify-end">
+      <section className="flex gap-3 justify-end mb-1">
         <b className="badge badge-primary">
           {t("common.category")} {categoria}
         </b>
@@ -78,10 +78,10 @@ export default function Test({
       >
         {chosen.i > 0 && (
           <>
-            <section className="grid basis-1/2 items-center justify-center min-w-[50vh]">
+            <section className="grid basis-1/2 items-center justify-center min-w-[49vh]">
               <img
                 data-fresh-disable-lock
-                className="lg:w-[50vh]"
+                // className="lg:w-[50vh]"
                 src={`/img/${categoria}/${chosen.i}.jpg`}
               ></img>
             </section>
