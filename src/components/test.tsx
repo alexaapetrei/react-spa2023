@@ -1,4 +1,4 @@
-import type { Category } from "../data/useCatego.tsx";
+import type { Category } from "../hooks/useCatego.tsx";
 import Ans from "./test-choice.tsx";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -23,6 +23,7 @@ export default function Test({
   const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
   const [active, setActive] = React.useState<string[]>([]);
   const [checked, setChecked] = React.useState<boolean>(false);
+
   useEffect(() => {
     const localState = localStorage.getItem("state");
     if (localState) setState(JSON.parse(localState));

@@ -47,21 +47,30 @@ export default function Root() {
   );
 
   function handleServiceWorkerMessage(event: ServiceWorkerMessageEvent) {
-    console.log("Received a message from service worker:", event.data);
+    console.log("WAT - Received a message from service worker:", event.data);
     if (event.data && event.data.type === "UPDATE_AVAILABLE") {
       setUpdateAvailable(true);
+      console.log("WAT - UPDATE_AVAILABLE -- whatever that means");
       // If serviceWorker.controller is defined, there is a service worker controlling the page
       if (navigator.serviceWorker.controller) {
         const sw = navigator.serviceWorker.controller;
         setWaitingWorker(sw);
+        console.log("WAT - is there a service worker controller ?");
       }
     }
   }
   useEffect(() => {
+    //check for theme
+    const currentTheme = localStorage.getItem("currentTheme") || "cookie";
+    document.documentElement.setAttribute("data-theme", currentTheme);
+
     // Add an event listener for messages from service workers
     navigator.serviceWorker.addEventListener(
       "message",
       handleServiceWorkerMessage
+    );
+    console.log(
+      "WAT- this useEffect that registeres the listener works ... right  "
     );
 
     // Clean up the event listener on component unmount
@@ -75,10 +84,13 @@ export default function Root() {
 
   const handleUpdateClick = () => {
     if (waitingWorker) {
+      console.log("WAT- is a waitingWorker ? ? ");
+
       // Send a message to the waiting service worker to skip the waiting phase
       waitingWorker.postMessage({ type: "SKIP_WAITING" });
       waitingWorker.addEventListener("statechange", (event: Event) => {
         if ((event.target as ServiceWorker).state === "activated") {
+          console.log("WAT- is this even getting into the statechahged ? ");
           window.location.reload();
         }
       });

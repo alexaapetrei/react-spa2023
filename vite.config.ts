@@ -18,6 +18,7 @@ export default defineConfig({
         cacheId: `urs-sur-${timestamp}`,
         skipWaiting: true,
         clientsClaim: true,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         // swDest: 'dist/sw.js',
         // importScripts: [
         //   '/path/to/external/script1.js',

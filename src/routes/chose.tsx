@@ -1,26 +1,12 @@
-import useCatego from "../data/useCatego";
+import useCatego from "../hooks/useCatego";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
-import { useEffect, useState } from "react";
-type localState = { corecte: string[]; gresite: string[] };
+import useLocalState from "../hooks/useLocalState";
 
 export function Chose() {
   const { t } = useTranslation();
   const catego = useCatego();
-  const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
-
-  useEffect(() => {
-    const localState = localStorage.getItem("state");
-    const currentTheme = localStorage.getItem("currentTheme");
-    if (currentTheme)
-      document.documentElement.setAttribute("data-theme", currentTheme);
-    if (!currentTheme) {
-      document.documentElement.setAttribute("data-theme", "cookie");
-      localStorage.setItem("currentTheme", "cookie");
-    }
-    if (localState) setState(JSON.parse(localState));
-  }, []);
+  const [state, setState] = useLocalState();
 
   return (
     <section className="bg-neutral-content p-11 rounded-lg m-5">

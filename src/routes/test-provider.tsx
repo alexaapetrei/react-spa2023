@@ -1,5 +1,5 @@
 import { Link, useLocation, useParams } from "react-router-dom";
-import useCatego from "../data/useCatego";
+import useCatego from "../hooks/useCatego";
 import Test from "../components/test";
 import type { localState } from "../components/test";
 import { useTranslation } from "react-i18next";
