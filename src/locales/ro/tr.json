@@ -1,7 +1,8 @@
 {
   "root": {
     "updateAvailable": "E disponibilă o actualizare!",
-    "updateNow": "Actualizează acum"
+    "updateNow": "Actualizează acum",
+    "notYet": "nu inca"
   },
   "common": {
     "category": "categoria",
@@ -11,14 +12,14 @@
     "reset": "restartează",
     "right": "corect",
     "wrong": "gresit",
-    "next": "în continuare",
+    "next": "următoarea",
     "home": "acasă",
     "share": "distribuie"
   },
   "test": {
     "done": "Super, ai terminat runda. Acum treci prin întrebările greșite",
     "congrats": "Felicitări, e nevoie de multă concentrare pentru acete teste",
-    "startRetest": "Reia întrebările la care nu ai răspuns corect",
+    "startRetest": "Revizuiește răspunsurile greșite",
     "stillSomeLeft": "Bine, încă mai ai de lucru la câteva",
     "finished": "Minunat, ai răspuns corect la toate întrebările",
     "tip": "Amintește-ți, e mai bine să progresezi decât să fii perfect",

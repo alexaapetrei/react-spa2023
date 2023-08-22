@@ -1,7 +1,8 @@
 {
   "root": {
     "updateAvailable": "Ein Update ist verfügbar!",
-    "updateNow": "Jetzt aktualisieren"
+    "updateNow": "Jetzt aktualisieren",
+    "notYet": "später"
   },
   "common": {
     "category": "Kategorie",

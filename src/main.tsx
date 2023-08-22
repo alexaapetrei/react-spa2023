@@ -9,22 +9,27 @@ import ErrorPage from "./errorPage";
 import Root from "./routes/root";
 import TestProvider from "./routes/test-provider";
 
-import { Workbox } from "workbox-window";
+// import { registerSW } from "virtual:pwa-register";
 
-if ("serviceWorker" in navigator) {
-  const wb = new Workbox("/sw.js");
+// const updateSW = registerSW({
+//   onNeedRefresh() {
+//     // Notify the user that a new version is available.
+//     if (
+//       window.confirm(
+//         "A new version of the app is available. Refresh to update?"
+//       )
+//     ) {
+//       // Here, you could use any method provided by updateSW to refresh the service worker.
+//       // Assuming updateSW has a method called refreshSW() for this purpose:
+//       updateSW.refreshSW();
+//     }
+//   },
 
-  wb.addEventListener("installed", (event) => {
-    if (!event.isUpdate) {
-      console.log("Service worker installed for the first time!");
-    } else {
-      console.log("Service worker updated!");
-      window.location.reload(); // Reload the page to use the updated assets
-    }
-  });
-
-  wb.register();
-}
+//   onOfflineReady() {
+//     // Notify the user that the app is ready for offline use.
+//     alert("The app is now ready for offline use!");
+//   },
+// });
 
 const router = createBrowserRouter([
   {

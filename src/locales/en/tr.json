@@ -1,7 +1,8 @@
 {
   "root": {
     "updateAvailable": "An update is available!",
-    "updateNow": "Update Now"
+    "updateNow": "Update Now",
+    "notYet": "not yet"
   },
   "common": {
     "category": "category",

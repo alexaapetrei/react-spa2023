@@ -1,43 +1,43 @@
-import { useState, useEffect } from "react";
-import { Workbox } from "workbox-window";
+import { useRegisterSW } from "virtual:pwa-register/react";
 
 function useServiceWorker() {
-  const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
+  const intervalMS = 30 * 60 * 1000;
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log("SW Registered:", r);
+      if (r?.active?.state === "activated") setOfflineReady(true);
+      console.log("We set the offfline to true");
+      r &&
+        setInterval(() => {
+          console.log("checking for updates ... every, ", intervalMS);
+          r.update();
+        }, intervalMS);
+    },
+    onRegisterError(error) {
+      console.log("SW registration error", error);
+    },
+  });
 
-  useEffect(() => {
-    // Instantiate Workbox instance
-    const wb = new Workbox("/sw.js");
-
-    wb.addEventListener("waiting", () => {
-      console.log(
-        "A new service worker has installed, but it can't activate until all tabs running the current version have fully unloaded."
-      );
-      setUpdateAvailable(true);
-    });
-
-    wb.addEventListener("activated", (event) => {
-      if (!event.isUpdate) {
-        console.log("Service worker has been activated for the first time!");
-      } else {
-        console.log("Service worker has been updated and activated!");
-        window.location.reload();
-      }
-    });
-
-    // This will start the service worker registration process
-    wb.register();
-  }, []);
-
-  const handleUpdateClick = () => {
-    if (updateAvailable) {
-      // This will prompt the new service worker to take over immediately, which will trigger the "activated" event listener above
-      console.log("There's a waiting worker. Letting it take over now.");
-      // Inform the waiting service worker to take control immediately
-      navigator.serviceWorker.controller?.postMessage({ type: "SKIP_WAITING" });
-    }
+  const handleUpdate = () => {
+    updateServiceWorker(true);
+    setOfflineReady(true);
   };
 
-  return { updateAvailable, handleUpdateClick };
+  const close = () => {
+    setOfflineReady(false);
+    setNeedRefresh(false);
+  };
+
+  return {
+    offlineReady,
+    needRefresh,
+    handleUpdate,
+    close,
+  };
 }
 
 export default useServiceWorker;

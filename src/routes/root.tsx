@@ -11,7 +11,7 @@ export default function Root() {
   const { t, i18n } = useTranslation();
   const outlet = useOutlet();
   const changeTheme = useTheme();
-  const { updateAvailable, handleUpdateClick } = useServiceWorker();
+  const { needRefresh, close, offlineReady, handleUpdate } = useServiceWorker();
 
   const menuRef = useRef<ElementRef<"label">>(null);
 
@@ -50,7 +50,7 @@ export default function Root() {
             </div>
             <div className="flex-1 px-2 mx-2">
               <Link
-                className=" navbar-end"
+                className={`navbar-end `}
                 onClick={() =>
                   window.scrollTo({
                     top: 0,
@@ -61,12 +61,15 @@ export default function Root() {
                 to={"/"}
               >
                 <img
-                  className="avatar"
+                  className={`avatar ${
+                    offlineReady ? "bg-green-600" : "bg-amber-500"
+                  } rounded-sm`}
                   src="/bear2023.svg"
                   alt="alive and kicking"
                   width="50px"
                 />
               </Link>
+              {offlineReady ? <p>🚀⚡</p> : <p>👩‍💻</p>}
             </div>
             <div className="flex-none hidden md:block">
               <div className="dropdown dropdown-end">
@@ -151,7 +154,7 @@ export default function Root() {
         </div>
       </div>
 
-      {updateAvailable && (
+      {needRefresh && (
         <div className="fixed left-3 right-3 bottom-5">
           <div className="alert">
             <svg
@@ -168,11 +171,11 @@ export default function Root() {
               ></path>
             </svg>
             <span>{t("root.updateAvailable")}</span>
-            <div>
-              <button
-                onClick={handleUpdateClick}
-                className="btn btn-sm btn-primary"
-              >
+            <div className="flex gap-2">
+              <button className="btn btn-sm" onClick={close}>
+                {t("root.notYet")} &times;
+              </button>
+              <button onClick={handleUpdate} className="btn btn-sm btn-primary">
                 {t("root.updateNow")}
               </button>
             </div>

@@ -1,7 +1,8 @@
 {
   "root": {
     "updateAvailable": "Elérhető egy frissítés!",
-    "updateNow": "Frissítés most"
+    "updateNow": "Frissítés most",
+    "notYet": "még nem"
   },
   "common": {
     "category": "kategória",
