@@ -104,7 +104,7 @@ export default function Root() {
               </div>
               <ul className="menu menu-horizontal">
                 <li>
-                  <label className="swap swap-rotate">
+                  <label className="swap swap-rotate btn">
                     {/* this hidden checkbox controls the state */}
                     <input onClick={changeTheme} type="checkbox" />
 

@@ -1,5 +1,5 @@
 import { Link, useLocation, useParams } from "react-router-dom";
-import useCatego from "../hooks/useCatego";
+import useCatego, { LangKeys } from "../hooks/useCatego";
 import Test from "../components/test";
 import type { localState } from "../components/test";
 import { useTranslation } from "react-i18next";
@@ -9,9 +9,9 @@ type routeProps = {
   nr: string;
 };
 export default function TestProvider() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const catego = useCatego();
+  const catego = useCatego(i18n.language as LangKeys);
 
   const route = useLocation();
   const isRetake = route.pathname.split("/").filter(Boolean)[0] === "retake";

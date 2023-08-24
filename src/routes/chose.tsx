@@ -1,11 +1,11 @@
-import useCatego from "../hooks/useCatego";
+import useCatego, { LangKeys } from "../hooks/useCatego";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useLocalState from "../hooks/useLocalState";
 
 export function Chose() {
-  const { t } = useTranslation();
-  const catego = useCatego();
+  const { t, i18n } = useTranslation();
+  const catego = useCatego(i18n.language as LangKeys);
   const [state, setState] = useLocalState();
 
   return (

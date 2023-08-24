@@ -46,7 +46,6 @@ export default function Test({
     }
     if (isRetake && key === "gresite") {
       newState = { ...state, corecte: [...new Set(state.corecte)] };
-      console.log("WAT retatke fire gresite-- ", newState);
     }
 
     setState(newState);

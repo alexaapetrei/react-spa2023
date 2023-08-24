@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
 import ro from "../data/catego.json";
-import en from "../data/catego-en.json";
-import de from "../data/catego-de.json";
-import hu from "../data/catego-hu.json";
-import { useTranslation } from "react-i18next";
 
 export type Ans = {
   [key: string]: string;
@@ -21,26 +17,38 @@ export type Catego = {
   [key: string]: Category[];
 };
 
-// Using a Map to store the options
-const options = new Map<string, Catego>([
-  ["ro", ro],
-  ["en", en],
-  ["hu", hu],
-  ["de", de],
-]);
-
-const availableLangs = [...options.keys()] as const;
+const availableLangs = ["ro", "en", "hu", "de"] as const;
 export type LangKeys = (typeof availableLangs)[number];
 
-const useCatego = (): Catego => {
-  const { i18n } = useTranslation();
-  const [currentCatego, setCurrentCatego] = useState<Catego>(
-    options.get(i18n.language) || ro
-  );
+const useCatego = (lang = "ro"): Catego => {
+  const [currentCatego, setCurrentCatego] = useState<Catego>(ro);
 
   useEffect(() => {
-    setCurrentCatego(options.get(i18n.language) || ro);
-  }, [i18n.language]);
+    const loadCatego = async () => {
+      if (lang === "ro") return; // Already have default data
+
+      let categoData: Catego;
+
+      switch (lang) {
+        case "en":
+          categoData = (await import("../data/catego-en.json")).default;
+          break;
+        case "de":
+          categoData = (await import("../data/catego-de.json")).default;
+          break;
+        case "hu":
+          categoData = (await import("../data/catego-hu.json")).default;
+          break;
+        default:
+          categoData = ro;
+          return;
+      }
+
+      setCurrentCatego(categoData);
+    };
+
+    loadCatego();
+  }, [lang]);
 
   return currentCatego;
 };
