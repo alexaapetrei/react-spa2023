@@ -13,35 +13,30 @@ export type Category = {
   i: number;
 };
 
+export type LangKeys = "ro" | "en" | "de" | "hu";
 export type Catego = {
   [key: string]: Category[];
 };
 
-const availableLangs = ["ro", "en", "hu", "de"] as const;
-export type LangKeys = (typeof availableLangs)[number];
-
-const useCatego = (lang = "ro"): Catego => {
+const useCatego = (lang: LangKeys = "ro"): Catego => {
   const [currentCatego, setCurrentCatego] = useState<Catego>(ro);
 
   useEffect(() => {
     const loadCatego = async () => {
-      if (lang === "ro") return; // Already have default data
-
       let categoData: Catego;
 
       switch (lang) {
         case "en":
-          categoData = (await import("../data/catego-en.json")).default;
+          categoData = (await import(`../data/catego-en.json`)).default;
           break;
         case "de":
-          categoData = (await import("../data/catego-de.json")).default;
+          categoData = (await import(`../data/catego-de.json`)).default;
           break;
         case "hu":
-          categoData = (await import("../data/catego-hu.json")).default;
+          categoData = (await import(`../data/catego-hu.json`)).default;
           break;
         default:
-          categoData = ro;
-          return;
+          categoData = ro; // default 'ro' data
       }
 
       setCurrentCatego(categoData);

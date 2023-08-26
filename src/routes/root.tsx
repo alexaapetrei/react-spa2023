@@ -11,7 +11,8 @@ export default function Root() {
   const { t, i18n } = useTranslation();
   const outlet = useOutlet();
   const changeTheme = useTheme();
-  const { needRefresh, close, offlineReady, handleUpdate } = useServiceWorker();
+  const { needRefresh, close, offlineReady, handleUpdate, msg } =
+    useServiceWorker();
 
   const menuRef = useRef<ElementRef<"label">>(null);
 
@@ -29,7 +30,6 @@ export default function Root() {
       <div className="drawer">
         <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content flex flex-col">
-          {/* Navbar */}
           <div className="w-full navbar bg-base-300">
             <div className="flex-none md:hidden">
               <label htmlFor="my-drawer-3" className="btn btn-square btn-ghost">
@@ -52,18 +52,14 @@ export default function Root() {
               <Link
                 className={`navbar-end `}
                 onClick={() =>
-                  window.scrollTo({
-                    top: 0,
-                    left: 0,
-                    behavior: "smooth",
-                  })
+                  window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
                 }
                 to={"/"}
               >
                 <img
                   className={`avatar ${
                     offlineReady ? "bg-green-600" : "bg-amber-500"
-                  } rounded-sm`}
+                  } rounded-sm ${msg === "installng" ? "animate-spin" : ""}`}
                   src="/bear2023.svg"
                   alt="alive and kicking"
                   width="50px"
