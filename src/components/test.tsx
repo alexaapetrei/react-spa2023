@@ -23,7 +23,7 @@ export default function Test({
   const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
   const [active, setActive] = React.useState<string[]>([]);
   const [checked, setChecked] = React.useState<boolean>(false);
-
+  const hasImage = chosen.i > 0;
   useEffect(() => {
     const localState = localStorage.getItem("state");
     if (localState) setState(JSON.parse(localState));
@@ -64,7 +64,7 @@ export default function Test({
   };
   return (
     <>
-      <section className="flex gap-3 justify-end mb-1">
+      <section className="flex gap-3 justify-end mb-1 ">
         <b className="badge badge-primary">
           {t("common.category")} {categoria}
         </b>
@@ -74,9 +74,13 @@ export default function Test({
       </section>
       <div
         id="wrapper"
-        className={`flex w-full flex-col sm:felx-row md:flex-row lg:flex-row rounded-md`}
+        className={
+          hasImage
+            ? `flex w-full flex-col sm:felx-row md:flex-row lg:flex-row rounded-md `
+            : `lg:mx-[25vw] md:mx-[10vw] sm:mx-[5vw]`
+        }
       >
-        {chosen.i > 0 && (
+        {hasImage && (
           <>
             <section className="grid basis-1/2 items-center justify-center min-w-[49vh]">
               <img
