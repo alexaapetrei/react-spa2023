@@ -24,9 +24,9 @@ export default function TestProvider() {
   const catego = useCatego(i18n.language as LangKeys);
 
   const route = useLocation();
-  const isRetake = route.pathname.split("/").filter(Boolean)[0] === "retake";
+  const isRetake = route.pathname.includes("retake");
   const { categoria = "b", nr = "0" } = useParams<routeProps>();
-  const numarul = Number(nr);
+  const numarul = categoria !== "dan" ? Number(nr) : 0;
 
   let state: localState;
 
@@ -34,11 +34,13 @@ export default function TestProvider() {
   if (localState) state = JSON.parse(localState);
 
   const chosenCategory = isRetake
-    ? catego[categoria].filter((q) => state.gresite.includes(q.id))
-    : categoria === "dan" ? shuffleBasedOnId(catego[categoria]) : catego[categoria];
+    ? shuffleBasedOnId(catego[categoria].filter((q) => state.gresite.includes(q.id)))
+    : categoria === "dan" ? shuffleBasedOnId(catego[categoria]).filter((q) => !state?.gresite?.includes(q.id) && !state?.corecte?.includes(q.id)) : catego[categoria];
   const chosen = chosenCategory[numarul];
-  const last = numarul >= chosenCategory.length;
-  const next = last ? chosenCategory.length : numarul + 1;
+  const last = categoria === "dan" ? chosenCategory.length === 0 : numarul >= chosenCategory.length;
+  const next = last ? categoria === "dan" ? 0 : chosenCategory.length : numarul + 1;
+
+
 
   if (!isRetake && last)
     return (
