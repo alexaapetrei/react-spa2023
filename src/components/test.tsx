@@ -23,7 +23,8 @@ export default function Test({
   const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
   const [active, setActive] = React.useState<string[]>([]);
   const [checked, setChecked] = React.useState<boolean>(false);
-  const hasImage = chosen.i > 0;
+  if (chosen.i == undefined) chosen.i = 0;
+  const hasImage = chosen.i > 0
   useEffect(() => {
     const localState = localStorage.getItem("state");
     if (localState) setState(JSON.parse(localState));
@@ -104,11 +105,11 @@ export default function Test({
                 checked
                   ? null
                   : setActive(
-                      (active.includes(answer)
-                        ? active.filter((a) => a !== answer)
-                        : [...active, answer]
-                      ).sort()
-                    );
+                    (active.includes(answer)
+                      ? active.filter((a) => a !== answer)
+                      : [...active, answer]
+                    ).sort()
+                  );
               }}
             >
               <Ans
