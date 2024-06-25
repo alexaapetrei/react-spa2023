@@ -70,7 +70,7 @@ export default function Test({
           {t("common.category")} {categoria}
         </b>
         <b className="badge badge-primary">
-          {t("common.question")} {next - 1}
+          {t("common.question")} {next - 1} {chosen.id}
         </b>
       </section>
       <div
