@@ -10,7 +10,7 @@ export type Category = {
   q: string;
   ans: Ans;
   v: string;
-  i: number;
+  i?: number;
 };
 
 export type LangKeys = "ro" | "en" | "de" | "hu";
