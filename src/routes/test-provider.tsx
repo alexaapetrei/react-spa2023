@@ -1,8 +1,18 @@
 import { Link, useLocation, useParams } from "react-router-dom";
-import useCatego, { LangKeys } from "../hooks/useCatego";
+import useCatego, { Category, LangKeys } from "../hooks/useCatego";
 import Test from "../components/test";
 import type { localState } from "../components/test";
 import { useTranslation } from "react-i18next";
+
+
+function shuffleBasedOnId(array: Category[]) {
+  // Shuffle array based on the integer part of the id using Fisher-Yates algorithm
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 type routeProps = {
   categoria: string;
@@ -25,7 +35,7 @@ export default function TestProvider() {
 
   const chosenCategory = isRetake
     ? catego[categoria].filter((q) => state.gresite.includes(q.id))
-    : catego[categoria];
+    : categoria === "dan" ? shuffleBasedOnId(catego[categoria]) : catego[categoria];
   const chosen = chosenCategory[numarul];
   const last = numarul >= chosenCategory.length;
   const next = last ? chosenCategory.length : numarul + 1;
