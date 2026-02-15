@@ -15,7 +15,10 @@ cleanupOutdatedCaches();
 
 registerRoute(
   ({ request, url }) => {
-    if (url.origin === 'https://sql.js.org') {
+    if (url.pathname.endsWith('.db')) {
+      return true;
+    }
+    if (url.pathname.startsWith('/sql-wasm/')) {
       return true;
     }
     return false;

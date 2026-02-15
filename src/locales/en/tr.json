@@ -13,7 +13,7 @@
     "right": "right",
     "wrong": "wrong",
     "next": "next",
-"home": "home",
+    "home": "home",
     "share": "share",
     "menu": "Menu",
     "language": "Language"
@@ -27,6 +27,8 @@
     "tip": "Remember, progress is better than perfection",
     "wrong": "You tryed , you can try harder",
     "right": "correct",
-    "check": "Check Answers"
+    "check": "Check Answers",
+    "update": "Update",
+    "next": "Next"
   }
 }

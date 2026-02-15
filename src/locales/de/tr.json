@@ -13,7 +13,7 @@
     "right": "richtig",
     "wrong": "falsch",
     "next": "weiter",
-"home": "Zuhause",
+    "home": "Zuhause",
     "share": "teilen",
     "menu": "Menü",
     "language": "Sprache"
@@ -27,6 +27,8 @@
     "tip": "Denk daran, Fortschritt ist besser als Perfektion",
     "wrong": "Du hast es versucht, du kannst dich noch mehr anstrengen",
     "right": "korrekt",
-    "check": "Antworten überprüfen"
+    "check": "Antworten überprüfen",
+    "update": "Aktualisieren",
+    "next": "Weiter"
   }
 }

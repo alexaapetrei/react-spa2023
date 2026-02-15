@@ -13,7 +13,7 @@
     "right": "corect",
     "wrong": "gresit",
     "next": "următoarea",
-"home": "acasă",
+    "home": "acasă",
     "share": "distribuie",
     "menu": "Meniu",
     "language": "Limba"
@@ -27,6 +27,8 @@
     "tip": "Amintește-ți, e mai bine să progresezi decât să fii perfect",
     "wrong": "Mai încearcă o dată, poți mai bine",
     "right": "Blană",
-    "check": "Verifică răspunsurile"
+    "check": "Verifică răspunsurile",
+    "update": "Actualizează",
+    "next": "Următoarea"
   }
 }
