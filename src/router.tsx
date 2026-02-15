@@ -6,6 +6,7 @@ import { Social } from "./components/social";
 import { Moon, Sun, Menu, Home as HomeIcon } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./components/ui/sheet";
+import Image from "./components/ui/image";
 import confetti from "canvas-confetti";
 import {
   DropdownMenu,
@@ -22,10 +23,9 @@ import { RotateCcw, ArrowRight } from "lucide-react";
 
 import type { Catego, LangKeys } from "./hooks/useCatego";
 import roData from "./data/catego.json";
+import { HomeActions } from "./components/home-actions";
 
 const validLangs: LangKeys[] = ["ro", "en", "de", "hu"];
-
-let currentLanguage: LangKeys = "ro";
 
 const getCurrentLanguage = (): LangKeys => {
   if (typeof window === "undefined") return "ro";
@@ -66,7 +66,6 @@ function RootComponent() {
 
   const handleLanguageChange = (lang: string) => {
     if (isDanRoute && lang !== "ro") return;
-    currentLanguage = lang as LangKeys;
     i18n.changeLanguage(lang);
     router.invalidate();
   };
@@ -90,7 +89,7 @@ function RootComponent() {
           
           <div className="flex items-center gap-2">
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-              <SheetTrigger asChild>
+              <SheetTrigger>
                 <Button variant="ghost" size="icon" className="md:hidden">
                   <Menu className="h-5 w-5" />
                 </Button>
@@ -112,7 +111,7 @@ function RootComponent() {
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">{t("common.language")}</p>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger className="w-full">
                         <Button variant="outline" className="w-full justify-start">
                           {langs[i18n.language as keyof typeof langs]}
                         </Button>
@@ -157,7 +156,7 @@ function RootComponent() {
             
             <div className="hidden md:flex items-center gap-2">
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger>
                   <Button variant="outline" size="sm">{i18n.language}</Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -203,8 +202,7 @@ const indexRoute = createRoute({
 });
 
 function Index() {
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { t } = useTranslation();
   const { questions } = indexRoute.useLoaderData() as LoaderData;
   const catego = questions;
   const [state] = useLocalState();
@@ -217,7 +215,7 @@ function Index() {
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="flex flex-wrap gap-4 justify-center">
         {Object.keys(catego).map((c) => {
           const corecteCount = state.corecte.filter((q) => q.includes(c)).length;
           const gresiteCount = state.gresite.filter((q) => q.includes(c)).length;
@@ -226,7 +224,7 @@ function Index() {
           const percentage = maxQuestions > 0 ? (totalCount / maxQuestions) * 100 : 0;
 
           return (
-            <Link key={c} to={`/categoria/${c}/${totalCount}` as any} preload={false}>
+            <Link key={c} to={`/categoria/${c}/${totalCount}` as any} preload={false} className="w-1/2 sm:w-1/3 lg:w-1/4">
               <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-center text-2xl font-black">{c.toUpperCase()}</CardTitle>
@@ -244,17 +242,13 @@ function Index() {
         })}
       </div>
 
-      <div className="flex gap-4 justify-center">
-        <Button variant="outline" onClick={() => router.invalidate()}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          {t("test.update")}
-        </Button>
-      </div>
+      <HomeActions />
+
     </div>
   );
 }
 
-function FinishedCard({ category }: { category: string }) {
+function FinishedCard() {
   const { t } = useTranslation();
   const confettiRef = useRef(false);
 
@@ -357,7 +351,7 @@ function Categoria() {
       );
     }
 
-    return <FinishedCard category={categoria} />;
+    return <FinishedCard />;
   }
 
   return (
@@ -472,10 +466,10 @@ function TestView({ chosen, categoria, next, isRetake }: { chosen: any; categori
         {hasImage ? (
           <div className="flex flex-col lg:flex-row">
             <div className="lg:w-1/2 p-6 flex items-center justify-center bg-muted rounded-l-lg">
-              <img 
+              <Image 
                 src={`/img/${categoria}/${chosen.i}.jpg`} 
                 alt="Question" 
-                className="rounded-lg max-h-80 max-w-full object-contain"
+                className="max-h-80 object-contain"
               />
             </div>
             <div className="lg:w-1/2">
@@ -516,6 +510,7 @@ function TestView({ chosen, categoria, next, isRetake }: { chosen: any; categori
                   <Button 
                     onClick={() => {
                       reset();
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                       if (isRetake) {
                         navigate({ to: "/retake/$categoria/$nr", params: { categoria, nr: String(next) }, viewTransition: true }).then(() => {
                           router.invalidate();
@@ -572,6 +567,7 @@ function TestView({ chosen, categoria, next, isRetake }: { chosen: any; categori
                 <Button 
                   onClick={() => {
                     reset();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                     if (isRetake) {
                       navigate({ to: "/retake/$categoria/$nr", params: { categoria, nr: String(next) }, viewTransition: true });
                     } else {

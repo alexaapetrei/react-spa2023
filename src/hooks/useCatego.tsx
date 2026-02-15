@@ -20,12 +20,9 @@ export type Catego = {
 
 const useCatego = (lang: string | undefined | null): Catego => {
   const [currentCatego, setCurrentCatego] = useState<Catego>(ro);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadCatego = async () => {
-      setLoading(true);
-      
       let categoData: Catego = ro;
 
       if (lang === "en") {
@@ -37,7 +34,6 @@ const useCatego = (lang: string | undefined | null): Catego => {
       }
 
       setCurrentCatego(categoData);
-      setLoading(false);
     };
 
     if (lang && lang !== "ro") {

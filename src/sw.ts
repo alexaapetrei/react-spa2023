@@ -1,5 +1,4 @@
 /// <reference lib="webworker" />
-declare const self: ServiceWorkerGlobalScope;
 
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
@@ -7,14 +6,14 @@ import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategi
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
-declare let self: ServiceWorkerGlobalScope & typeof globalThis;
+declare const self: ServiceWorkerGlobalScope & typeof globalThis;
 
 precacheAndRoute(self.__WB_MANIFEST);
 
 cleanupOutdatedCaches();
 
 registerRoute(
-  ({ request, url }) => {
+  ({ url }) => {
     if (url.pathname.endsWith('.db')) {
       return true;
     }

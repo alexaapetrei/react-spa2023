@@ -16,6 +16,9 @@
     "home": "otthon",
     "share": "megosztás",
     "menu": "Menü",
+    "cancel": "Mégse",
+    "resetConfirmTitle": "Előrehaladás visszaállítása?",
+    "resetConfirmText": "Ez törli a mentett előrehaladást és a gyorsítótárban lévő fájlokat (service worker). A művelet nem visszavonható.",
     "language": "Nyelv"
   },
   "test": {

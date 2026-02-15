@@ -16,6 +16,9 @@
     "home": "home",
     "share": "share",
     "menu": "Menu",
+    "cancel": "Cancel",
+    "resetConfirmTitle": "Reset progress?",
+    "resetConfirmText": "This will clear saved progress and cached assets (service worker). This cannot be undone.",
     "language": "Language"
   },
   "test": {

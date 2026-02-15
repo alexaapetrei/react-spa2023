@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
+import Image from "./ui/image";
 import { cn } from "@/lib/utils";
 
 type ChestionarProps = {
@@ -45,7 +46,7 @@ export default function Test({
     if (isRetake && key === "corecte") {
       newState = {
         ...state,
-        gresite: [...state.gresite.filter((g) => g !== chosen.id)],
+        gresite: state.gresite.filter((g) => g !== chosen.id),
         corecte: [...state.corecte, chosen.id],
       };
     }
@@ -79,10 +80,10 @@ export default function Test({
       )}>
         {hasImage && (
           <div className="lg:w-1/2 flex items-center justify-center bg-muted rounded-lg p-4">
-            <img
+            <Image
               src={`/img/${categoria}/${chosen.i}.jpg`}
               alt="Question"
-              className="max-w-full max-h-80 rounded-lg shadow-md"
+              className="max-h-80"
             />
           </div>
         )}

@@ -16,6 +16,9 @@
     "home": "acasă",
     "share": "distribuie",
     "menu": "Meniu",
+    "cancel": "Anulează",
+    "resetConfirmTitle": "Resetați progresul?",
+    "resetConfirmText": "Aceasta va șterge progresul salvat și activele în cache (service worker). Această acțiune nu poate fi anulată.",
     "language": "Limba"
   },
   "test": {

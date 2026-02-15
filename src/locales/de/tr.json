@@ -16,6 +16,9 @@
     "home": "Zuhause",
     "share": "teilen",
     "menu": "Menü",
+    "cancel": "Abbrechen",
+    "resetConfirmTitle": "Fortschritt zurücksetzen?",
+    "resetConfirmText": "Dadurch werden gespeicherte Fortschritte und zwischengespeicherte Dateien (Service Worker) gelöscht. Dies kann nicht rückgängig gemacht werden.",
     "language": "Sprache"
   },
   "test": {
