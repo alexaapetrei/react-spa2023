@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "no-console": "warn",
+    "no-debugger": "warn",
+    "no-unused-vars": "warn",
+    "no-unreachable": "warn",
+    "suspicious.noExplicitAny": "warn"
+  },
+  "exclude": ["node_modules", "public", "dist", "*.min.js"]
+}

@@ -7,7 +7,7 @@
   "common": {
     "category": "categoria",
     "question": "întrebarea",
-    "encourage": "Eu sunt sigur că poți.",
+    "encourage": "Eu sunt sigur că poți. Incepe un test!",
     "disourage": "Arată respect, împarte cu ceilalți",
     "reset": "restartează",
     "right": "corect",
@@ -20,7 +20,7 @@
   },
   "test": {
     "done": "Super, ai terminat runda. Acum treci prin întrebările greșite",
-    "congrats": "Felicitări, e nevoie de multă concentrare pentru acs te test",
+    "congrats": "Felicitări, e nevoie de multă concentrare pentru aceste test",
     "startRetest": "Revizuiește răspunsurile greșite",
     "stillSomeLeft": "Bine, încă mai ai de lucru la câteva",
     "finished": "Minunat, ai răspuns corect la toate întrebările",

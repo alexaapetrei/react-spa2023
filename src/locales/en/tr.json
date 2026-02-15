@@ -7,7 +7,7 @@
   "common": {
     "category": "category",
     "question": "question",
-    "encourage": "You can do it, learn!",
+    "encourage": "You can do it, learn! Start a test!",
     "disourage": "Dont be a duche, share ",
     "reset": "reset",
     "right": "right",
@@ -20,7 +20,7 @@
   },
   "test": {
     "done": "Good job , you finished the set, now redo the questions you failed",
-    "congrats": "Awesome jon, it takes a lot to focus for so long",
+    "congrats": "Awesome job, it takes a lot to focus for so long",
     "startRetest": "Start on failed question set",
     "stillSomeLeft": "Nice, you still have a few though",
     "finished": "Amazing, you completed all the questions without any mistakes",

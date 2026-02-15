@@ -1,11 +1,12 @@
 import { createRouter, createRootRoute, createRoute, Outlet, Link, useRouter, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { langs } from "./i18n";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Social } from "./components/social";
 import { Moon, Sun, Menu, Home as HomeIcon } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./components/ui/sheet";
+import confetti from "canvas-confetti";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -183,7 +184,7 @@ function RootComponent() {
         </div>
       </header>
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 min-h-[60vh]">
         <Outlet />
       </main>
     </div>
@@ -225,7 +226,7 @@ function Index() {
           const percentage = maxQuestions > 0 ? (totalCount / maxQuestions) * 100 : 0;
 
           return (
-            <Link key={c} to={`/categoria/${c}/${totalCount}`} preload={false}>
+            <Link key={c} to={`/categoria/${c}/${totalCount}` as any} preload={false}>
               <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-center text-2xl font-black">{c.toUpperCase()}</CardTitle>
@@ -249,6 +250,57 @@ function Index() {
           {t("test.update")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function FinishedCard({ category }: { category: string }) {
+  const { t } = useTranslation();
+  const confettiRef = useRef(false);
+
+  useEffect(() => {
+    if (confettiRef.current) return;
+    confettiRef.current = true;
+    
+    const duration = 2000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7'],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7'],
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  }, []);
+
+  return (
+    <div className="animate-in fade-in zoom-in duration-500">
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>{t("test.finished")}</CardTitle>
+          <CardDescription>{t("test.congrats")}</CardDescription>
+        </CardHeader>
+        <CardFooter className="justify-center">
+          <Link to="/" preload={false} viewTransition>
+            <Button>{t("common.home")}</Button>
+          </Link>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
@@ -277,27 +329,35 @@ function Categoria() {
 
   const chosenCategory = catego[categoria];
   const chosen = chosenCategory?.[numarul];
-  const last = !chosen || numarul >= chosenCategory.length;
-  const next = last ? chosenCategory.length : numarul + 1;
+  const last = !chosenCategory || numarul >= chosenCategory.length;
+  const next = last ? chosenCategory?.length || 0 : numarul + 1;
 
-  if (!chosen) return <div>Loading...</div>;
+  if (!chosen && !last) return <div>Loading...</div>;
   if (last) {
-    return (
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>{t("test.done")}</CardTitle>
-          <CardDescription>{t("test.congrats")}</CardDescription>
-        </CardHeader>
-        <CardFooter className="justify-center">
-          <Link to={`/retake/${categoria}/0` as any} preload={false}>
-            <Button>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              {t("test.retake")}
-            </Button>
-          </Link>
-        </CardFooter>
-      </Card>
-    );
+    const wrongAnswersForCategory = state.gresite.filter((q: string) => q.startsWith(categoria));
+    
+    if (wrongAnswersForCategory.length > 0) {
+      return (
+        <div className="animate-in fade-in zoom-in duration-300">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>{t("test.done")}</CardTitle>
+              <CardDescription>{t("test.congrats")}</CardDescription>
+            </CardHeader>
+            <CardFooter className="justify-center">
+              <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
+                <Button>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {t("test.startRetest")}
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      );
+    }
+
+    return <FinishedCard category={categoria} />;
   }
 
   return (
@@ -340,11 +400,11 @@ function Retake() {
     return (
       <Card className="max-w-md mx-auto">
         <CardHeader>
-          <CardTitle>{t("test.nones")}</CardTitle>
+          <CardTitle>{t("test.congrats")}</CardTitle>
         </CardHeader>
         <CardFooter className="justify-center">
-          <Link to="/" preload={false}>
-            <Button>{t("test.home")}</Button>
+          <Link to="/" preload={false} viewTransition>
+            <Button>{t("common.home")}</Button>
           </Link>
         </CardFooter>
       </Card>
@@ -358,10 +418,10 @@ function Retake() {
           <CardDescription>{t("test.congrats")}</CardDescription>
         </CardHeader>
         <CardFooter className="justify-center">
-          <Link to={`/retake/${categoria}/0` as any} preload={false}>
+          <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
             <Button>
               <RotateCcw className="mr-2 h-4 w-4" />
-              {t("test.retake")}
+              {t("test.startReteste")}
             </Button>
           </Link>
         </CardFooter>
@@ -377,6 +437,7 @@ function Retake() {
 function TestView({ chosen, categoria, next, isRetake }: { chosen: any; categoria: string; next: number; isRetake: boolean }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const router = useRouter();
   const [active, setActive] = useState<string[]>([]);
   const [checked, setChecked] = useState(false);
   const hasImage = (chosen.i || 0) > 0;
@@ -456,9 +517,11 @@ function TestView({ chosen, categoria, next, isRetake }: { chosen: any; categori
                     onClick={() => {
                       reset();
                       if (isRetake) {
-                        navigate({ to: "/retake/$categoria/$nr", params: { categoria, nr: String(next) } });
+                        navigate({ to: "/retake/$categoria/$nr", params: { categoria, nr: String(next) }, viewTransition: true }).then(() => {
+                          router.invalidate();
+                        });
                       } else {
-                        navigate({ to: "/categoria/$categoria/$nr", params: { categoria, nr: String(next) } });
+                        navigate({ to: "/categoria/$categoria/$nr", params: { categoria, nr: String(next) }, viewTransition: true });
                       }
                     }} 
                     className="flex-1"
@@ -510,9 +573,9 @@ function TestView({ chosen, categoria, next, isRetake }: { chosen: any; categori
                   onClick={() => {
                     reset();
                     if (isRetake) {
-                      navigate({ to: "/retake/$categoria/$nr", params: { categoria, nr: String(next) } });
+                      navigate({ to: "/retake/$categoria/$nr", params: { categoria, nr: String(next) }, viewTransition: true });
                     } else {
-                      navigate({ to: "/categoria/$categoria/$nr", params: { categoria, nr: String(next) } });
+                      navigate({ to: "/categoria/$categoria/$nr", params: { categoria, nr: String(next) }, viewTransition: true });
                     }
                   }} 
                   className="flex-1"
@@ -534,6 +597,7 @@ const routeTree = rootRoute.addChildren([indexRoute, categoriaRoute, retakeRoute
 const router = createRouter({
   routeTree,
   defaultPreload: false,
+  defaultViewTransition: true,
 });
 
 declare module "@tanstack/react-router" {

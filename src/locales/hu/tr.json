@@ -7,7 +7,7 @@
   "common": {
     "category": "kategória",
     "question": "kérdés",
-    "encourage": "Megtudod csinálni, tanulj!",
+    "encourage": "Megtudod csinálni, tanulj! Indíts egy tesztet!",
     "disourage": "Ne légy bunkó, oszd meg!",
     "reset": "újraindítás",
     "right": "helyes",
