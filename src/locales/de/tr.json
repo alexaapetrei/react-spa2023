@@ -13,8 +13,10 @@
     "right": "richtig",
     "wrong": "falsch",
     "next": "weiter",
-    "home": "Zuhause",
-    "share": "teilen"
+"home": "Zuhause",
+    "share": "teilen",
+    "menu": "Menü",
+    "language": "Sprache"
   },
   "test": {
     "done": "Gute Arbeit, du hast den Satz fertiggestellt. Bearbeite nun die Fragen, bei denen du Fehler gemacht hast",

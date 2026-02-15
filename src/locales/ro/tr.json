@@ -13,8 +13,10 @@
     "right": "corect",
     "wrong": "gresit",
     "next": "următoarea",
-    "home": "acasă",
-    "share": "distribuie"
+"home": "acasă",
+    "share": "distribuie",
+    "menu": "Meniu",
+    "language": "Limba"
   },
   "test": {
     "done": "Super, ai terminat runda. Acum treci prin întrebările greșite",

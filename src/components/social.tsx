@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { MessageCircle, Facebook, Mail, Twitter } from "lucide-react";
 
 export function Social() {
   const [isMobile, setIsMobile] = useState(false);
@@ -8,66 +9,72 @@ export function Social() {
   }, []);
 
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <a
-        className="btn btn-outline btn-success"
+        className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
         href={
           isMobile
             ? "whatsapp://send?text=https://test.urssur.com E cea mai faina metoda de a invata pentru examenul sala"
             : "https://api.whatsapp.com/send?text=https://test.urssur.com E cea mai faina metoda de a invata pentru examenul sala"
         }
-        title="Share pe WhatsApp"
         target="_blank"
         rel="noopener noreferrer"
       >
-        💚 WhatsApp
+        <MessageCircle className="h-4 w-4" />
+        WhatsApp
       </a>
+      
       {isMobile && (
-        <a
-          className="btn btn-outline bg-slate-500"
+        <a 
+          className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
           href="sms:?&body=https://test.urssur.com"
         >
-          📱 Share SMS
+          <MessageCircle className="h-4 w-4" />
+          SMS
         </a>
       )}
 
       <a
-        className="btn btn-outline btn-info"
+        className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
         href="https://www.facebook.com/sharer/sharer.php?u=https://test.urssur.com"
         target="_blank"
-        title="Share pe Facebook"
         rel="noopener noreferrer"
       >
-        📘 Facebook
+        <Facebook className="h-4 w-4" />
+        Facebook
       </a>
+
       {isMobile && (
         <a
-          className="btn btn-outline bg-fuchsia-600"
+          className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
           href="fb-messenger://share/?link=https://test.urssur.com"
           target="_blank"
           rel="noopener noreferrer"
         >
-          🗨 Messenger
+          <MessageCircle className="h-4 w-4" />
+          Messenger
         </a>
       )}
+
       <a
-        className="btn btn-outline btn-dark"
+        className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
         href="mailto:?subject=Chestionare Auto DRPCIV - Invata pe UrsSur.com&body=Cea mai buna metoda de a invata pentru examenul sala: https://test.urssur.com"
         target="_blank"
-        title="Trimite pe email"
         rel="noopener noreferrer"
       >
-        📧 e-mail
+        <Mail className="h-4 w-4" />
+        Email
       </a>
+
       <a
-        className="btn btn-outline btn-primary bg-blue-200"
+        className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
         href="https://twitter.com/intent/tweet?source=https://test.urssur.com&text=Chestionare Auto DRPCIV - Invata pe UrsSur.com: https://test.urssur.com&via=urssur"
         target="_blank"
-        title="Share pe Twitter"
         rel="noopener noreferrer"
       >
-        🐤Twitter
+        <Twitter className="h-4 w-4" />
+        Twitter
       </a>
-    </>
+    </div>
   );
 }

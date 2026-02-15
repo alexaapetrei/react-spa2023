@@ -13,8 +13,10 @@
     "right": "helyes",
     "wrong": "hibás",
     "next": "következő",
-    "home": "otthon",
-    "share": "megosztás"
+"home": "otthon",
+    "share": "megosztás",
+    "menu": "Menü",
+    "language": "Nyelv"
   },
   "test": {
     "done": "Jó munka, befejezted a készletet, most ismételd meg a hibás kérdéseket",

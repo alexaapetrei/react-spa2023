@@ -36,7 +36,7 @@ const useCatego = (lang: LangKeys = "ro"): Catego => {
           categoData = (await import(`../data/catego-hu.json`)).default;
           break;
         default:
-          categoData = ro; // default 'ro' data
+          categoData = ro;
       }
 
       setCurrentCatego(categoData);

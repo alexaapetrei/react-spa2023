@@ -13,8 +13,10 @@
     "right": "right",
     "wrong": "wrong",
     "next": "next",
-    "home": "home",
-    "share": "share"
+"home": "home",
+    "share": "share",
+    "menu": "Menu",
+    "language": "Language"
   },
   "test": {
     "done": "Good job , you finished the set, now redo the questions you failed",

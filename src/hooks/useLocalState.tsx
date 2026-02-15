@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-type localState = { corecte: string[]; gresite: string[] };
+export type localState = { corecte: string[]; gresite: string[] };
 
 function useLocalState(
   defaultState: localState = { corecte: [], gresite: [] }

@@ -1,8 +1,10 @@
-import type { Category } from "../hooks/useCatego.tsx";
-import Ans from "./test-choice.tsx";
+import type { Category } from "../hooks/useCatego";
+import Ans from "./test-choice";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 
 type ChestionarProps = {
   chosen: Category;
@@ -21,10 +23,12 @@ export default function Test({
 }: ChestionarProps) {
   const { t } = useTranslation();
   const [state, setState] = useState<localState>({ corecte: [], gresite: [] });
-  const [active, setActive] = React.useState<string[]>([]);
-  const [checked, setChecked] = React.useState<boolean>(false);
+  const [active, setActive] = useState<string[]>([]);
+  const [checked, setChecked] = useState<boolean>(false);
+  
   if (chosen.i == undefined) chosen.i = 0;
-  const hasImage = chosen.i > 0
+  const hasImage = chosen.i > 0;
+  
   useEffect(() => {
     const localState = localStorage.getItem("state");
     if (localState) setState(JSON.parse(localState));
@@ -54,114 +58,103 @@ export default function Test({
   };
 
   const resetChestionar = () => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "smooth",
-    });
-
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     setChecked(false);
     setActive([]);
   };
-  return (
-    <>
-      <section className="flex gap-3 justify-end mb-1 ">
-        <b className="badge badge-primary">
-          {t("common.category")} {categoria}
-        </b>
-        <b className="badge badge-primary">
-          {t("common.question")} {next - 1} {chosen.id}
-        </b>
-      </section>
-      <div
-        id="wrapper"
-        className={
-          hasImage
-            ? `flex w-full flex-col sm:felx-row md:flex-row lg:flex-row rounded-md `
-            : `lg:mx-[25vw] md:mx-[10vw] sm:mx-[5vw]`
-        }
-      >
-        {hasImage && (
-          <>
-            <section className="grid basis-1/2 items-center justify-center min-w-[49vh]">
-              <img
-                data-fresh-disable-lock
-                // className="lg:w-[50vh]"
-                src={`/img/${categoria}/${chosen.i}.jpg`}
-              ></img>
-            </section>
-            <div className="divider md:divider-horizontal"></div>
-          </>
-        )}
 
-        <section className="grid flex-grow lg:basis-1/2 pb-[10rem]">
-          <p className="text-2xl text-secondary font-bold mb-5 first-letter:uppercase wrap-balance">
-            {chosen.q}
-          </p>
-          {Object.keys(chosen.ans).map((answer) => (
-            <div
-              key={answer}
-              onClick={() => {
-                checked
-                  ? null
-                  : setActive(
-                    (active.includes(answer)
-                      ? active.filter((a) => a !== answer)
-                      : [...active, answer]
-                    ).sort()
-                  );
-              }}
-            >
-              <Ans
-                text={chosen.ans[answer]}
-                val={answer}
-                checked={checked}
-                correct={chosen.v}
-                active={active}
-              />
-            </div>
-          ))}
-          {checked ? (
-            active.toString() == chosen.v ? (
-              <p
-                className="btn btn-success btn-lg"
-                onClick={() => alert("What, you want a cookie or something")}
-              >
-                {t("test.right")}
-              </p>
-            ) : (
-              <p
-                className="btn btn-error btn-lg"
-                onClick={() => alert("For real , try harder")}
-              >
-                {t("test.wrong")}
-              </p>
-            )
-          ) : null}
-        </section>
+  return (
+    <div className="max-w-3xl mx-auto">
+      <div className="flex gap-3 justify-end mb-6">
+        <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+          {t("common.category")}: {categoria.toUpperCase()}
+        </span>
+        <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm">
+          {t("common.question")} {next - 1}
+        </span>
       </div>
 
-      {checked ? (
-        <>
-          <div className="fixed left-3 right-3 bottom-5">
-            <Link
-              className={` text-white uppercase font-semibold btn btn-block
-                ${active.toString() == chosen.v ? "btn-success" : "btn-error"}
-                `}
-              onClick={resetChestionar}
-              to={`/${isRetake ? "retake" : "categoria"}/${categoria}/${next}`}
-            >
-              <span>{t("common.next")}</span>
-            </Link>
+      <div className={cn(
+        hasImage ? "flex flex-col lg:flex-row gap-6" : ""
+      )}>
+        {hasImage && (
+          <div className="lg:w-1/2 flex items-center justify-center bg-muted rounded-lg p-4">
+            <img
+              src={`/img/${categoria}/${chosen.i}.jpg`}
+              alt="Question"
+              className="max-w-full max-h-80 rounded-lg shadow-md"
+            />
           </div>
-        </>
-      ) : active.length > 0 ? (
-        <div className="fixed left-3 right-3 bottom-5">
-          <button onClick={verifica} className="btn btn-block btn-info ">
-            <span>{t("test.check")}</span>
-          </button>
+        )}
+
+        <div className={cn(hasImage ? "lg:w-1/2" : "")}>
+          <p className="text-xl font-bold mb-6 first-letter:uppercase wrap-balance leading-relaxed pt-5">
+            {chosen.q}
+          </p>
+
+          <div className="space-y-3">
+            {Object.keys(chosen.ans).map((answer) => (
+              <div
+                key={answer}
+                onClick={() => {
+                  if (!checked) {
+                    setActive(
+                      active.includes(answer)
+                        ? active.filter((a) => a !== answer)
+                        : [...active, answer]
+                    );
+                  }
+                }}
+              >
+                <Ans
+                  text={chosen.ans[answer]}
+                  val={answer}
+                  checked={checked}
+                  correct={chosen.v}
+                  active={active}
+                />
+              </div>
+            ))}
+          </div>
+
+          {checked && (
+            <div className={cn(
+              "mt-6 p-4 rounded-lg text-center font-bold text-lg",
+              active.toString() === chosen.v 
+                ? "bg-green-500/20 text-green-700 dark:text-green-400" 
+                : "bg-red-500/20 text-red-700 dark:text-red-400"
+            )}>
+              {active.toString() === chosen.v ? t("test.right") : t("test.wrong")}
+            </div>
+          )}
         </div>
-      ) : null}
-    </>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t">
+        <div className="max-w-3xl mx-auto">
+          {checked ? (
+            <Link
+              to={`/${isRetake ? "retake" : "categoria"}/${categoria}/${next}`}
+              onClick={resetChestionar}
+              className={cn(
+                "block w-full py-4 px-6 rounded-lg text-white text-center font-semibold text-lg",
+                active.toString() === chosen.v 
+                  ? "bg-green-600 hover:bg-green-700" 
+                  : "bg-red-600 hover:bg-red-700"
+              )}
+            >
+              {t("common.next")} →
+            </Link>
+          ) : active.length > 0 ? (
+            <Button 
+              onClick={verifica} 
+              className="w-full py-6 text-lg"
+            >
+              {t("test.check")}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 type AnsProps = {
   val: string;
   text: string;
@@ -13,27 +15,43 @@ export default function TestChoice({
   correct,
   checked,
 }: AnsProps) {
-  const tick = checked ? (correct?.includes(val) ? "✔️" : "❌") : "🤔";
   const selectedByUser = active.includes(val);
-  return (
-    <div
-      className={`p-3 rounded-md mb-3 flex gap-3 ${
-        selectedByUser ? "btn-primary" : "btn-secondary"
-      }`}
-    >
-      <div className="avatar placeholder">
-        <div className="bg-neutral-focus text-neutral-content rounded-full w-12 font-semibold uppercase">
-          {checked
-            ? correct?.includes(val)
-              ? "✔️"
-              : "❌"
-            : selectedByUser
-            ? tick
-            : val}
-        </div>
-      </div>
+  const isCorrect = correct?.includes(val);
+  
+  let classes = "test-answer";
+  
+  if (checked) {
+    if (isCorrect) {
+      classes += " correct";
+    } else if (selectedByUser) {
+      classes += " incorrect";
+    }
+  } else if (selectedByUser) {
+    classes += " selected";
+  }
 
-      <span className={` wrap-balance `}>{text}</span>
+  const getIcon = () => {
+    if (checked) {
+      return isCorrect ? "✓" : selectedByUser ? "✗" : "";
+    }
+    return val.toUpperCase();
+  };
+
+  return (
+    <div className={classes}>
+      <div className={cn(
+        "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg",
+        checked && isCorrect 
+          ? "bg-green-500 text-white" 
+          : checked && selectedByUser && !isCorrect
+          ? "bg-red-500 text-white"
+          : selectedByUser
+          ? "bg-primary text-primary-foreground"
+          : "bg-muted"
+      )}>
+        {getIcon()}
+      </div>
+      <span className="wrap-balance">{text}</span>
     </div>
   );
 }
