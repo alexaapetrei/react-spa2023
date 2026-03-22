@@ -7,14 +7,19 @@
   "common": {
     "category": "Kategorie",
     "question": "Frage",
-    "encourage": "Du kannst es schaffen, lerne!",
+    "encourage": "Du schaffst das, starte jetzt einen Test!",
     "disourage": "Sei kein Idiot, teile!",
     "reset": "zurücksetzen",
     "right": "richtig",
     "wrong": "falsch",
     "next": "weiter",
     "home": "Zuhause",
-    "share": "teilen"
+    "share": "teilen",
+    "menu": "Menü",
+    "cancel": "Abbrechen",
+    "resetConfirmTitle": "Fortschritt zurücksetzen?",
+    "resetConfirmText": "Dadurch werden gespeicherte Fortschritte und zwischengespeicherte Dateien (Service Worker) gelöscht. Dies kann nicht rückgängig gemacht werden.",
+    "language": "Sprache"
   },
   "test": {
     "done": "Gute Arbeit, du hast den Satz fertiggestellt. Bearbeite nun die Fragen, bei denen du Fehler gemacht hast",
@@ -25,6 +30,8 @@
     "tip": "Denk daran, Fortschritt ist besser als Perfektion",
     "wrong": "Du hast es versucht, du kannst dich noch mehr anstrengen",
     "right": "korrekt",
-    "check": "Antworten überprüfen"
+    "check": "Antworten überprüfen",
+    "update": "Aktualisieren",
+    "next": "Weiter"
   }
 }

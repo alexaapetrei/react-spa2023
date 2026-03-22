@@ -18,31 +18,29 @@ export type Catego = {
   [key: string]: Category[];
 };
 
-const useCatego = (lang: LangKeys = "ro"): Catego => {
+const useCatego = (lang: string | undefined | null): Catego => {
   const [currentCatego, setCurrentCatego] = useState<Catego>(ro);
 
   useEffect(() => {
     const loadCatego = async () => {
-      let categoData: Catego;
+      let categoData: Catego = ro;
 
-      switch (lang) {
-        case "en":
-          categoData = (await import(`../data/catego-en.json`)).default;
-          break;
-        case "de":
-          categoData = (await import(`../data/catego-de.json`)).default;
-          break;
-        case "hu":
-          categoData = (await import(`../data/catego-hu.json`)).default;
-          break;
-        default:
-          categoData = ro; // default 'ro' data
+      if (lang === "en") {
+        categoData = (await import(`../data/catego-en.json`)).default;
+      } else if (lang === "de") {
+        categoData = (await import(`../data/catego-de.json`)).default;
+      } else if (lang === "hu") {
+        categoData = (await import(`../data/catego-hu.json`)).default;
       }
 
       setCurrentCatego(categoData);
     };
 
-    loadCatego();
+    if (lang && lang !== "ro") {
+      loadCatego();
+    } else {
+      setCurrentCatego(ro);
+    }
   }, [lang]);
 
   return currentCatego;

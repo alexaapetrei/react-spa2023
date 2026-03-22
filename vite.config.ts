@@ -1,71 +1,72 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
-import react from "@vitejs/plugin-react-swc";
-
-const currentDate = new Date();
-const timestamp = currentDate.getTime();
+import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
-  server: {
-    port: 3030
+  staged: {
+    "*": "vp check --fix",
   },
-  // build: {
-  //   assetsInlineLimit: 0,
-  //   rollupOptions: {
-  //     output: {
-  //       entryFileNames: `[name].js`,
-  //       chunkFileNames: `[name].js`,
-  //       assetFileNames: `[name].[ext]`
-  //     }
-  //   },
-  // },
+  server: {
+    port: 3030,
+    fs: {
+      allow: [".."],
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+  resolve: {
+    // Native tsconfig path resolution — replaces the vite-tsconfig-paths plugin
+    tsconfigPaths: true,
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
   plugins: [
+    tailwindcss(),
     react(),
     VitePWA({
-      // registerType: 'autoUpdate',
-      includeAssets: ['favicon.img', 'bear2023.svg', 'img/*', 'img/a/*', 'img/b/*', 'img/c/*', 'img/d/*', 'data/*'],
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       workbox: {
-        cacheId: `urs-sur-${timestamp}`,
-        // skipWaiting: true,
-        // clientsClaim: true,
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
-        // swDest: 'dist/sw.js',
-        // importScripts: [
-        //   '/path/to/external/script1.js',
-        //   '/path/to/external/script2.js',
-        // ],
-        // exclude: [
-        //   /\.map$/, 
-        //   /^manifest.*\.js?$/
-        // ],
-        // runtimeCaching: [
-        //   {
-        //     urlPattern: /^https:\/\/test\.urssur\.com\//,
-        //     handler: 'NetworkFirst',
-        //     options: {
-        //       cacheName: 'app-update-cache',
-        //       expiration: {
-        //         maxEntries: 800,
-        //         maxAgeSeconds: 7 * 24 * 60 * 60, // 1 week
-        //       },
-        //       broadcastUpdate: {
-        //         channelName: 'app-update-channel',
-        //         options: { // Add this object
-        //           headersToCheck: [], // List headers to check for changes (if needed)
-        //         }
-        //       },
-        //     },
-        //   },
-        // ],
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [
-          // Exclude URLs starting with /api/
-          /^\/api\//,
+        // Precache every asset in the build output (JS chunks, CSS, images, JSON…)
+        globPatterns: ["**/*"],
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        // SPA fallback: any navigation request that misses the precache (e.g.
+        // /categoria/b/5 opened offline) gets served the cached index.html so
+        // the client-side router can take over instead of showing a network error.
+        navigateFallback: "/index.html",
+        // Don't apply the fallback to browser-internal or Vite dev-server paths.
+        navigateFallbackDenylist: [/^\/__/],
+      },
+      manifest: {
+        name: "UrsSur",
+        short_name: "UrsSur",
+        scope: "/",
+        start_url: "/",
+        orientation: "any",
+        icons: [
+          {
+            src: "/android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/android-chrome-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
         ],
-        // directoryIndex: '/',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        cleanupOutdatedCaches: true,
-      }
-    })
+        theme_color: "#82ff89",
+        background_color: "#82ff89",
+        display: "standalone",
+      },
+    }),
   ],
 });

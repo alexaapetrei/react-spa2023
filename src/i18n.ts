@@ -1,57 +1,63 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
-// Define the types for TypeScript
 type Resources = {
-    [lang: string]: {
-        translation: Record<string, string>;
-    };
+  [lang: string]: {
+    translation: Record<string, string>;
+  };
 };
 
 type Langs = {
-    [code: string]: string;
+  [code: string]: string;
 };
 
-// You can import your translation files here
 const languages = ["en", "ro", "de", "hu"];
 
-const resources: Resources = {};
-
 async function loadTranslations() {
-    for (const lang of languages) {
-        const module = await import(`./locales/${lang}/tr.json`);
-        resources[lang] = {
-            translation: module.default
-        };
-    }
+  const resources: Resources = {};
+  
+  const translations = await Promise.all(
+    languages.map(async (lang) => {
+      const module = await import(`./locales/${lang}/tr.json`);
+      return { lang, translation: module.default };
+    })
+  );
+  
+  translations.forEach(({ lang, translation }) => {
+    resources[lang] = { translation };
+  });
+  
+  return resources;
 }
 
-loadTranslations().then(() => {
-    // Initialize i18n after translations are loaded
-    i18n
-        .use(initReactI18next)
-        .init({
-            resources,
-            lng: savedLanguage,
-            interpolation: {
-                escapeValue: false // react already escapes values
-            }
-        });
-
-    // Listen for language changes and update localStorage
-    i18n.on('languageChanged', function (lng) {
-        localStorage.setItem('i18nLanguage', lng);
+loadTranslations().then((resources) => {
+  i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      fallbackLng: "ro",
+      lng: localStorage.getItem("i18nLanguage") || "ro",
+      interpolation: {
+        escapeValue: false,
+      },
+      detection: {
+        order: ["localStorage", "navigator"],
+        caches: ["localStorage"],
+      },
     });
 });
 
-export const langs: Langs = {
-    ro: "Română",
-    en: "English",
-    de: "Deutsch",
-    hu: "Magyar"
-};
+i18n.on("languageChanged", function (lng) {
+  localStorage.setItem("i18nLanguage", lng);
+});
 
-// Check for saved language in localStorage or default to "ro"
-const savedLanguage = localStorage.getItem('i18nLanguage') || "ro";
+export const langs: Langs = {
+  ro: "Română",
+  en: "English",
+  de: "Deutsch",
+  hu: "Magyar",
+};
 
 export default i18n;

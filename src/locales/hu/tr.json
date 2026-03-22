@@ -7,14 +7,19 @@
   "common": {
     "category": "kategória",
     "question": "kérdés",
-    "encourage": "Megtudod csinálni, tanulj!",
+    "encourage": "Megtudod csinálni, tanulj! Indíts egy tesztet!",
     "disourage": "Ne légy bunkó, oszd meg!",
     "reset": "újraindítás",
     "right": "helyes",
     "wrong": "hibás",
     "next": "következő",
     "home": "otthon",
-    "share": "megosztás"
+    "share": "megosztás",
+    "menu": "Menü",
+    "cancel": "Mégse",
+    "resetConfirmTitle": "Előrehaladás visszaállítása?",
+    "resetConfirmText": "Ez törli a mentett előrehaladást és a gyorsítótárban lévő fájlokat (service worker). A művelet nem visszavonható.",
+    "language": "Nyelv"
   },
   "test": {
     "done": "Jó munka, befejezted a készletet, most ismételd meg a hibás kérdéseket",
@@ -25,6 +30,8 @@
     "tip": "Emlékezz, a fejlődés jobb, mint a tökéletesség",
     "wrong": "Próbálkoztál, még jobban is tudsz próbálkozni",
     "right": "helyes",
-    "check": "Válaszok ellenőrzése"
+    "check": "Válaszok ellenőrzése",
+    "update": "Frissítés",
+    "next": "Következő"
   }
 }
