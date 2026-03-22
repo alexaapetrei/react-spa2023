@@ -1,10 +1,4 @@
-import {
-  createRouter,
-  createRootRoute,
-  createRoute,
-  Outlet,
-  Link,
-} from "@tanstack/react-router";
+import { createRouter, createRootRoute, createRoute, Outlet, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Button } from "./components/ui/button";
 import {
@@ -34,9 +28,7 @@ const getCurrentLanguage = (): LangKeys => {
 };
 
 const loadQuestions = async (lang: string): Promise<Catego> => {
-  const validLang = validLangs.includes(lang as LangKeys)
-    ? (lang as LangKeys)
-    : "ro";
+  const validLang = validLangs.includes(lang as LangKeys) ? (lang as LangKeys) : "ro";
   if (validLang === "ro") return roData as Catego;
   const module = await import(`./data/catego-${validLang}.json`);
   return module.default as Catego;
@@ -76,15 +68,10 @@ function Index() {
           const gresiteCount = state.gresite.filter((q) => q.includes(c)).length;
           const totalCount = corecteCount + gresiteCount;
           const maxQuestions = questions[c].length;
-          const percentage =
-            maxQuestions > 0 ? (totalCount / maxQuestions) * 100 : 0;
+          const percentage = maxQuestions > 0 ? (totalCount / maxQuestions) * 100 : 0;
 
           return (
-            <Link
-              key={c}
-              to={`/categoria/${c}/${totalCount}` as any}
-              preload={false}
-            >
+            <Link key={c} to={`/categoria/${c}/${totalCount}` as any} preload={false}>
               <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-center text-2xl font-black">
@@ -106,9 +93,7 @@ function Index() {
 
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-lg sm:text-3xl font-bold">
-            {t("common.encourage")}
-          </CardTitle>
+          <CardTitle className="text-lg sm:text-3xl font-bold">{t("common.encourage")}</CardTitle>
         </CardHeader>
       </Card>
     </div>
@@ -158,9 +143,11 @@ function Categoria() {
   if (!chosen && !last) return <div>Loading…</div>;
 
   if (last) {
-    const wrongForCategory = (state.gresite as string[]).filter((q) =>
-      q.startsWith(categoria)
-    );
+    const wrongForCategory = (state.gresite as string[]).filter((q) => q.startsWith(categoria));
+    const correctForCategory = (state.corecte as string[]).filter((q) => q.startsWith(categoria));
+    const totalAnswered = wrongForCategory.length + correctForCategory.length;
+    const score =
+      totalAnswered > 0 ? Math.round((correctForCategory.length / totalAnswered) * 100) : 0;
 
     if (wrongForCategory.length > 0) {
       return (
@@ -170,12 +157,26 @@ function Categoria() {
               <CardTitle>{t("test.done")}</CardTitle>
               <CardDescription>{t("test.congrats")}</CardDescription>
             </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-green-600">
+                  ✓ {correctForCategory.length} {t("common.right")}
+                </span>
+                <span className="text-red-500">
+                  ✗ {wrongForCategory.length} {t("common.wrong")}
+                </span>
+              </div>
+              <Progress value={score} className="h-2" />
+              <p className="text-xs text-muted-foreground text-center">
+                {t("test.scoreOf", {
+                  score,
+                  answered: totalAnswered,
+                  total: chosenCategory?.length ?? totalAnswered,
+                })}
+              </p>
+            </CardContent>
             <CardFooter className="justify-center">
-              <Link
-                to={`/retake/${categoria}/0` as any}
-                preload={false}
-                viewTransition
-              >
+              <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
                 <Button>
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {t("test.startRetest")}
@@ -187,17 +188,16 @@ function Categoria() {
       );
     }
 
-    return <FinishedCard />;
+    return (
+      <FinishedCard
+        correct={correctForCategory.length}
+        total={totalAnswered}
+        categoria={categoria}
+      />
+    );
   }
 
-  return (
-    <TestView
-      chosen={chosen}
-      categoria={categoria}
-      next={next}
-      isRetake={false}
-    />
-  );
+  return <TestView chosen={chosen} categoria={categoria} next={next} isRetake={false} />;
 }
 
 // ─── Retake layout ────────────────────────────────────────────────────────────
@@ -228,63 +228,72 @@ function Retake() {
   const numarul = Number(nr);
 
   const raw = localStorage.getItem("state");
-  const wrongAnswers: string[] = raw ? JSON.parse(raw).gresite : [];
+  const savedState = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
+  const wrongAnswers: string[] = savedState.gresite;
   const categoryWrong = wrongAnswers.filter((q) => q.startsWith(categoria));
+  const categoryCorrect = (savedState.corecte as string[]).filter((q) => q.startsWith(categoria));
 
   const chosenCategory = questions[categoria];
   const wrongIds = new Set(categoryWrong);
   const wrongQuestions = chosenCategory?.filter((q) => wrongIds.has(q.id)) || [];
 
   const chosen = wrongQuestions[numarul];
-  const last = !chosen || numarul >= wrongQuestions.length;
-  const next = last ? wrongQuestions.length : numarul + 1;
+  const next = numarul + 1;
 
+  // Stats for completion screens
+  const totalAnswered = categoryCorrect.length + categoryWrong.length;
+  const retakeScore =
+    totalAnswered > 0 ? Math.round((categoryCorrect.length / totalAnswered) * 100) : 100;
+
+  // Finished this retake pass — check current state to decide which screen
   if (!chosen) {
+    if (categoryWrong.length > 0) {
+      // Still wrong answers remaining → offer another retake pass
+      return (
+        <div className="animate-in fade-in zoom-in duration-300">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>{t("test.done")}</CardTitle>
+              <CardDescription>{t("test.congrats")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-green-600">
+                  ✓ {categoryCorrect.length} {t("common.right")}
+                </span>
+                <span className="text-red-500">
+                  ✗ {categoryWrong.length} {t("common.wrong")}
+                </span>
+              </div>
+              <Progress value={retakeScore} className="h-2" />
+              <p className="text-xs text-muted-foreground text-center">
+                {t("test.scoreOf", {
+                  score: retakeScore,
+                  answered: totalAnswered,
+                  total: chosenCategory?.length ?? totalAnswered,
+                })}
+              </p>
+            </CardContent>
+            <CardFooter className="justify-center">
+              <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
+                <Button>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {t("test.startRetest")}
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      );
+    }
+
+    // All wrong answers cleared → confetti!
     return (
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>{t("test.congrats")}</CardTitle>
-        </CardHeader>
-        <CardFooter className="justify-center">
-          <Link to="/" preload={false} viewTransition>
-            <Button>{t("common.home")}</Button>
-          </Link>
-        </CardFooter>
-      </Card>
+      <FinishedCard correct={categoryCorrect.length} total={totalAnswered} categoria={categoria} />
     );
   }
 
-  if (last) {
-    return (
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>{t("test.done")}</CardTitle>
-          <CardDescription>{t("test.congrats")}</CardDescription>
-        </CardHeader>
-        <CardFooter className="justify-center">
-          <Link
-            to={`/retake/${categoria}/0` as any}
-            preload={false}
-            viewTransition
-          >
-            <Button>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              {t("test.startReteste")}
-            </Button>
-          </Link>
-        </CardFooter>
-      </Card>
-    );
-  }
-
-  return (
-    <TestView
-      chosen={chosen}
-      categoria={categoria}
-      next={next}
-      isRetake={true}
-    />
-  );
+  return <TestView chosen={chosen} categoria={categoria} next={next} isRetake={true} />;
 }
 
 // ─── Router ───────────────────────────────────────────────────────────────────

@@ -19,7 +19,10 @@
     "cancel": "Mégse",
     "resetConfirmTitle": "Előrehaladás visszaállítása?",
     "resetConfirmText": "Ez törli a mentett előrehaladást és a gyorsítótárban lévő fájlokat (service worker). A művelet nem visszavonható.",
-    "language": "Nyelv"
+    "language": "Nyelv",
+    "resetCategory": "Kategória újraindítása",
+    "resetCategoryConfirmTitle": "Újraindítás?",
+    "resetCategoryConfirmText": "Ez csak ennél a kategóriánál törli a haladásodat. Nem visszavonható."
   },
   "test": {
     "done": "Jó munka, befejezted a készletet, most ismételd meg a hibás kérdéseket",
@@ -32,6 +35,7 @@
     "right": "helyes",
     "check": "Válaszok ellenőrzése",
     "update": "Frissítés",
-    "next": "Következő"
+    "next": "Következő",
+    "scoreOf": "{{score}}% — {{answered}} / {{total}} megválaszolva"
   }
 }
