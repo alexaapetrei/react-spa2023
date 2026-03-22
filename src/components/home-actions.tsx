@@ -57,55 +57,53 @@ export function HomeActions() {
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <div className="w-full sm:w-full lg:w-1/2 mx-auto flex justify-center gap-2">
-        <Button variant="outline" onClick={handleUpdate}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          {t("test.update")}
-        </Button>
+    <div className="grid grid-cols-2 gap-2">
+      <Button variant="outline" size="sm" className="w-full" onClick={handleUpdate}>
+        <RotateCcw className="mr-2 h-4 w-4" />
+        {t("test.update")}
+      </Button>
 
-        <Dialog.Root open={open} onOpenChange={setOpen}>
-          <Dialog.Trigger asChild>
-            <Button variant="destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              {t("common.reset")}
-            </Button>
-          </Dialog.Trigger>
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Trigger asChild>
+          <Button variant="destructive" size="sm" className="w-full">
+            <Trash2 className="mr-2 h-4 w-4" />
+            {t("common.reset")}
+          </Button>
+        </Dialog.Trigger>
 
-          <Dialog.Portal>
-            {/* Overlay — fades in/out */}
-            <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150" />
+        <Dialog.Portal>
+          {/* Overlay — fades in/out */}
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150" />
 
-            {/* Content — scales + fades in, scales + fades out */}
-            <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:duration-150">
-              <Card className="w-full max-w-sm">
-                <CardHeader>
-                  <Dialog.Title className="font-semibold text-lg">
-                    {t("common.resetConfirmTitle")}
-                  </Dialog.Title>
-                  <Dialog.Description className="text-sm text-muted-foreground">
-                    {t("common.resetConfirmText")}
-                  </Dialog.Description>
-                </CardHeader>
-                <CardFooter className="justify-end gap-2">
-                  <Dialog.Close asChild>
-                    <Button variant="outline">{t("common.cancel")}</Button>
-                  </Dialog.Close>
-                  <Button
-                    variant="destructive"
-                    onClick={async () => {
-                      setOpen(false);
-                      await performReset();
-                    }}
-                  >
-                    {t("common.reset")}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
-      </div>
+          {/* Content — scales + fades in, scales + fades out */}
+          <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:duration-150">
+            <Card className="w-full max-w-sm">
+              <CardHeader>
+                <Dialog.Title className="font-semibold text-lg">
+                  {t("common.resetConfirmTitle")}
+                </Dialog.Title>
+                <Dialog.Description className="text-sm text-muted-foreground">
+                  {t("common.resetConfirmText")}
+                </Dialog.Description>
+              </CardHeader>
+              <CardFooter className="justify-end gap-2">
+                <Dialog.Close asChild>
+                  <Button variant="outline">{t("common.cancel")}</Button>
+                </Dialog.Close>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    setOpen(false);
+                    await performReset();
+                  }}
+                >
+                  {t("common.reset")}
+                </Button>
+              </CardFooter>
+            </Card>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
