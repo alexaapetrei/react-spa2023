@@ -2,7 +2,12 @@
   "root": {
     "updateAvailable": "Ein Update ist verfügbar!",
     "updateNow": "Jetzt aktualisieren",
-    "notYet": "später"
+    "notYet": "später",
+    "offlineReady": "Offline bereit",
+    "offlineCached": "Alle Inhalte gespeichert",
+    "offlineCaching": "Wird gespeichert…",
+    "offlinePreparing": "Offline-Zugriff wird vorbereitet",
+    "iosInstallHint": "Teilen → Zum Startbildschirm"
   },
   "common": {
     "category": "Kategorie",

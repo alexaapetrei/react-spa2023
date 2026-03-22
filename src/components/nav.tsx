@@ -14,6 +14,10 @@ import {
   XCircle,
   X,
   Circle,
+  HardDrive,
+  Loader2,
+  Download,
+  Share,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet";
@@ -36,6 +40,14 @@ export function NavLayout() {
   const [offlineReady, setOfflineReady] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<
+    (Event & { prompt(): Promise<void>; userChoice: Promise<{ outcome: string }> }) | null
+  >(null);
+  const [installed, setInstalled] = useState(false);
+
+  // iOS: no beforeinstallprompt — detect and show "Share → Add to Home Screen" hint
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
 
   const pathname = routerState.location.pathname;
 
@@ -84,7 +96,29 @@ export function NavLayout() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then(() => setOfflineReady(true)).catch(() => {});
     }
+
+    const onBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as typeof installPrompt);
+    };
+    const onInstalled = () => setInstalled(true);
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleInstall = async () => {
+    if (installPrompt) {
+      await installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === "accepted") setInstalled(true);
+      setInstallPrompt(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -97,7 +131,6 @@ export function NavLayout() {
           {/* ── Left: logo ── */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <img src="/bear2023.svg" alt="logo" width="36" className="rounded-sm" />
-            <span className="text-base leading-none">{offlineReady ? "🚀⚡" : "👩‍💻"}</span>
           </Link>
 
           {/* ── Center: quiz context pill — clickable progress button ── */}
@@ -185,7 +218,58 @@ export function NavLayout() {
                   </div>
 
                   <HomeActions />
+
                   <Social />
+
+                  {/* Offline / SW status — also an install-to-homescreen trigger */}
+                  {!installed && !isStandalone && (
+                    <button
+                      onClick={handleInstall}
+                      disabled={!installPrompt && !isIos}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl border transition-all text-left ${
+                        offlineReady
+                          ? "border-green-500/30 bg-green-500/10 " +
+                            (installPrompt || isIos
+                              ? "hover:border-green-500/60 hover:bg-green-500/20 active:scale-[0.98] cursor-pointer"
+                              : "cursor-default")
+                          : "border-border/50 bg-muted/30 cursor-default"
+                      }`}
+                    >
+                      <div className="relative shrink-0">
+                        {offlineReady ? (
+                          <>
+                            <HardDrive className="h-5 w-5 text-green-500" />
+                            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-2 ring-background" />
+                          </>
+                        ) : (
+                          <>
+                            <HardDrive className="h-5 w-5 text-muted-foreground" />
+                            <Loader2 className="absolute -top-1 -right-1 h-3 w-3 animate-spin text-primary" />
+                          </>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={`text-sm font-medium leading-tight ${offlineReady ? "text-green-600 dark:text-green-400" : ""}`}
+                        >
+                          {offlineReady ? t("root.offlineReady") : t("root.offlineCaching")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-tight line-clamp-2">
+                          {isIos && offlineReady
+                            ? t("root.iosInstallHint")
+                            : offlineReady
+                              ? t("root.offlineCached")
+                              : t("root.offlinePreparing")}
+                        </p>
+                      </div>
+                      {/* Install affordance icon */}
+                      {offlineReady && (installPrompt || isIos) && (
+                        <span className="shrink-0 text-muted-foreground">
+                          {isIos ? <Share className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+                        </span>
+                      )}
+                    </button>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

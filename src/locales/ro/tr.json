@@ -2,7 +2,12 @@
   "root": {
     "updateAvailable": "E disponibilă o actualizare!",
     "updateNow": "Actualizează acum",
-    "notYet": "nu inca"
+    "notYet": "nu inca",
+    "offlineReady": "Disponibil offline",
+    "offlineCached": "Tot conținutul este salvat",
+    "offlineCaching": "Se salvează…",
+    "offlinePreparing": "Se pregătește accesul offline",
+    "iosInstallHint": "Partajare → Adaugă pe ecran"
   },
   "common": {
     "category": "categoria",

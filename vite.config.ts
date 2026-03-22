@@ -35,14 +35,12 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       workbox: {
-        // Precache every asset in the build output (JS chunks, CSS, images, JSON…)
-        globPatterns: ["**/*"],
+        // Precache everything: app shell + all 576 question images.
+        // Offline-first means the full dataset must be available at install time.
+        globPatterns: ["**/*.{js,css,html,json,svg,png,jpg,jpeg,ico,webmanifest,txt}"],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        // SPA fallback: any navigation request that misses the precache (e.g.
-        // /categoria/b/5 opened offline) gets served the cached index.html so
-        // the client-side router can take over instead of showing a network error.
+        // SPA fallback for offline deep-links
         navigateFallback: "/index.html",
-        // Don't apply the fallback to browser-internal or Vite dev-server paths.
         navigateFallbackDenylist: [/^\/__/],
       },
       manifest: {

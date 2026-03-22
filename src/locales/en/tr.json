@@ -2,7 +2,12 @@
   "root": {
     "updateAvailable": "An update is available!",
     "updateNow": "Update Now",
-    "notYet": "not yet"
+    "notYet": "not yet",
+    "offlineReady": "Offline ready",
+    "offlineCached": "All content cached",
+    "offlineCaching": "Caching content…",
+    "offlinePreparing": "Preparing offline access",
+    "iosInstallHint": "Share → Add to Home Screen"
   },
   "common": {
     "category": "category",

@@ -2,7 +2,12 @@
   "root": {
     "updateAvailable": "Elérhető egy frissítés!",
     "updateNow": "Frissítés most",
-    "notYet": "még nem"
+    "notYet": "még nem",
+    "offlineReady": "Offline kész",
+    "offlineCached": "Minden tartalom mentve",
+    "offlineCaching": "Mentés folyamatban…",
+    "offlinePreparing": "Offline hozzáférés előkészítése",
+    "iosInstallHint": "Megosztás → Kezdőképernyőre"
   },
   "common": {
     "category": "kategória",
