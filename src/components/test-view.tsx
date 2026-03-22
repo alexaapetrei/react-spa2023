@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import Image from "./ui/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check, X, Circle } from "lucide-react";
 import type { Category } from "../hooks/useCatego";
 
 type TestViewProps = {
@@ -61,36 +61,54 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
 
   const Answers = (
     <div className="space-y-3">
-      {Object.keys(chosen.ans).map((answer: string) => (
-        <button
-          key={answer}
-          onClick={() =>
-            !checked &&
-            setActive((prev) =>
-              prev.includes(answer)
-                ? prev.filter((a) => a !== answer)
-                : [...prev, answer]
-            )
-          }
-          disabled={checked}
-          className={`w-full px-4 py-4 rounded-xl border-2 flex items-center gap-4 transition-colors text-left ${
-            checked
-              ? chosen.v.includes(answer)
-                ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                : active.includes(answer)
+      {Object.keys(chosen.ans).map((answer: string) => {
+        const isCorrect = chosen.v.includes(answer);
+        const isSelected = active.includes(answer);
+
+        // Four post-check states:
+        // hit    = correct + selected  → green filled
+        // missed = correct + not selected → green border, no fill
+        // wrong  = incorrect + selected  → red filled
+        // irrelevant = incorrect + not selected → dimmed
+        const stateClass = checked
+          ? isCorrect && isSelected
+            ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+            : isCorrect && !isSelected
+              ? "border-green-500 opacity-75"
+              : isSelected
                 ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-                : "border-input opacity-50"
-              : active.includes(answer)
-              ? "border-primary bg-primary/10"
-              : "border-input hover:border-primary/50 hover:bg-accent/30"
-          }`}
-        >
-          <span className="text-xl font-bold w-8 shrink-0 text-center">
-            {answer.toUpperCase()}.
-          </span>
-          <span className="flex-1 leading-snug">{chosen.ans[answer]}</span>
-        </button>
-      ))}
+                : "border-input opacity-40"
+          : isSelected
+            ? "border-primary bg-primary/10"
+            : "border-input hover:border-primary/50 hover:bg-accent/30";
+
+        return (
+          <button
+            key={answer}
+            onClick={() =>
+              !checked &&
+              setActive((prev) =>
+                prev.includes(answer) ? prev.filter((a) => a !== answer) : [...prev, answer],
+              )
+            }
+            disabled={checked}
+            className={`relative w-full px-4 py-4 rounded-xl border-2 flex items-center gap-4 transition-colors text-left ${stateClass}`}
+          >
+            {/* icon badge — absolute over the top-left corner of the letter box, 2px inset */}
+            {checked && (isCorrect || isSelected) && (
+              <span className="absolute top-0.5 left-0.5">
+                {isCorrect && isSelected && <Check className="h-3.5 w-3.5 text-green-600" />}
+                {isCorrect && !isSelected && <Circle className="h-3.5 w-3.5 text-green-600" />}
+                {!isCorrect && isSelected && <X className="h-3.5 w-3.5 text-red-600" />}
+              </span>
+            )}
+            <span className="text-xl font-bold w-8 shrink-0 text-center">
+              {answer.toUpperCase()}.
+            </span>
+            <span className="flex-1 leading-snug">{chosen.ans[answer]}</span>
+          </button>
+        );
+      })}
     </div>
   );
 
