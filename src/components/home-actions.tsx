@@ -59,9 +59,9 @@ export function HomeActions() {
 
   return (
     <>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-2">
         {/* align actions with card widths: full width on mobile/sm, centered half width on lg */}
-        <div className="w-full sm:w-full lg:w-1/2 mx-auto flex justify-center gap-4">
+        <div className="w-full sm:w-full lg:w-1/2 mx-auto flex justify-center gap-2">
           <Button variant="outline" onClick={handleUpdate}>
             <RotateCcw className="mr-2 h-4 w-4" />
             {t("test.update")}
