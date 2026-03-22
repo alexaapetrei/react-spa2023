@@ -19,7 +19,10 @@
     "cancel": "Cancel",
     "resetConfirmTitle": "Reset progress?",
     "resetConfirmText": "This will clear saved progress and cached assets (service worker). This cannot be undone.",
-    "language": "Language"
+    "language": "Language",
+    "resetCategory": "Start over this category",
+    "resetCategoryConfirmTitle": "Start over?",
+    "resetCategoryConfirmText": "This will clear your progress for this category only. It cannot be undone."
   },
   "test": {
     "done": "Good job , you finished the set, now redo the questions you failed",
@@ -32,6 +35,7 @@
     "right": "correct",
     "check": "Check Answers",
     "update": "Update",
-    "next": "Next"
+    "next": "Next",
+    "scoreOf": "{{score}}% — {{answered}} of {{total}} answered"
   }
 }

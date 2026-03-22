@@ -19,7 +19,10 @@
     "cancel": "Anulează",
     "resetConfirmTitle": "Resetați progresul?",
     "resetConfirmText": "Aceasta va șterge progresul salvat și activele în cache (service worker). Această acțiune nu poate fi anulată.",
-    "language": "Limba"
+    "language": "Limba",
+    "resetCategory": "Reîncepe această categorie",
+    "resetCategoryConfirmTitle": "Reîncepi?",
+    "resetCategoryConfirmText": "Aceasta va șterge progresul doar pentru această categorie. Nu poate fi anulat."
   },
   "test": {
     "done": "Super, ai terminat runda. Acum treci prin întrebările greșite",
@@ -32,6 +35,7 @@
     "right": "Blană",
     "check": "Verifică răspunsurile",
     "update": "Actualizează",
-    "next": "Următoarea"
+    "next": "Următoarea",
+    "scoreOf": "{{score}}% — {{answered}} din {{total}} răspunse"
   }
 }

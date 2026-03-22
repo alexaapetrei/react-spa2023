@@ -19,7 +19,10 @@
     "cancel": "Abbrechen",
     "resetConfirmTitle": "Fortschritt zurücksetzen?",
     "resetConfirmText": "Dadurch werden gespeicherte Fortschritte und zwischengespeicherte Dateien (Service Worker) gelöscht. Dies kann nicht rückgängig gemacht werden.",
-    "language": "Sprache"
+    "language": "Sprache",
+    "resetCategory": "Kategorie neu starten",
+    "resetCategoryConfirmTitle": "Neu starten?",
+    "resetCategoryConfirmText": "Dies löscht deinen Fortschritt nur für diese Kategorie. Es kann nicht rückgängig gemacht werden."
   },
   "test": {
     "done": "Gute Arbeit, du hast den Satz fertiggestellt. Bearbeite nun die Fragen, bei denen du Fehler gemacht hast",
@@ -32,6 +35,7 @@
     "right": "korrekt",
     "check": "Antworten überprüfen",
     "update": "Aktualisieren",
-    "next": "Weiter"
+    "next": "Weiter",
+    "scoreOf": "{{score}}% — {{answered}} von {{total}} beantwortet"
   }
 }

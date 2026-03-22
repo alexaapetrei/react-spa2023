@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @theme {
   --color-background: oklch(0.985 0 0);
@@ -84,17 +85,27 @@ html::view-transition-new(action-bar) {
 }
 
 @keyframes vt-fade-out {
-  to { opacity: 0; }
+  to {
+    opacity: 0;
+  }
 }
 @keyframes vt-fade-in {
-  from { opacity: 0; }
+  from {
+    opacity: 0;
+  }
 }
 /* Subtle offset slide (not a full wipe) — feels like card progression */
 @keyframes vt-slide-out {
-  to { transform: translateX(-48px); opacity: 0; }
+  to {
+    transform: translateX(-48px);
+    opacity: 0;
+  }
 }
 @keyframes vt-slide-in {
-  from { transform: translateX(48px); opacity: 0; }
+  from {
+    transform: translateX(48px);
+    opacity: 0;
+  }
 }
 
 /* Respect the user's OS preference */
