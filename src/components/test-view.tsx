@@ -19,11 +19,13 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
   const navigate = useNavigate();
   const [active, setActive] = useState<string[]>([]);
   const [checked, setChecked] = useState(false);
-  const hasImage = (chosen.i || 0) > 0;
+  const hasImage = !!chosen.imageUrl || chosen.i !== undefined;
 
   const handleCheck = () => {
     setChecked(true);
-    const isCorrect = active.toString() === chosen.v;
+    // Sort both sides before comparing so click order doesn't affect correctness,
+    // and joining without separator matches how chosen.v is stored ("ab" not "a,b").
+    const isCorrect = [...active].sort().join("") === [...chosen.v].sort().join("");
     const key = isCorrect ? "corecte" : "gresite";
     const raw = localStorage.getItem("state");
     let state = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
@@ -127,7 +129,7 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
             <div className="flex flex-col lg:flex-row">
               <div className="lg:w-1/2 p-6 flex items-center justify-center bg-muted lg:rounded-l-xl">
                 <Image
-                  src={`/img/${categoria}/${chosen.i}.jpg`}
+                  src={chosen.imageUrl ?? `/img/${categoria}/${chosen.i}.jpg`}
                   alt="Question"
                   className="max-h-72 object-contain"
                 />

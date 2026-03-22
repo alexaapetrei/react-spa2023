@@ -11,6 +11,8 @@ export type Category = {
   ans: Ans;
   v: string;
   i?: number;
+  imageUrl?: string;
+  isCustom?: boolean;
 };
 
 export type LangKeys = "ro" | "en" | "de" | "hu";

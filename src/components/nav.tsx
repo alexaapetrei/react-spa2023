@@ -18,6 +18,7 @@ import {
   Loader2,
   Download,
   Share,
+  BookPlus,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet";
@@ -71,17 +72,22 @@ export function NavLayout() {
     return questions?.[quizCategoriaKey]?.length ?? null;
   })();
 
-  // Progress stats for the dialog — read live from localStorage
+  // Progress stats for the dialog — read live from localStorage.
+  // Deduplicate so multiple retake attempts for the same question count once.
   const progressStats = (() => {
     if (!isQuizRoute || !quizCategoriaKey) return null;
     const raw = localStorage.getItem("state");
     const state = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
-    const correct = (state.corecte as string[]).filter((q) =>
-      q.startsWith(quizCategoriaKey),
-    ).length;
-    const wrong = (state.gresite as string[]).filter((q) => q.startsWith(quizCategoriaKey)).length;
-    const answered = correct + wrong;
-    const remaining = categoryTotal != null ? categoryTotal - answered : null;
+    const correct = new Set(
+      (state.corecte as string[]).filter((q) => q.startsWith(quizCategoriaKey)),
+    ).size;
+    const wrong = new Set((state.gresite as string[]).filter((q) => q.startsWith(quizCategoriaKey)))
+      .size;
+    const answered = new Set([
+      ...(state.corecte as string[]).filter((q) => q.startsWith(quizCategoriaKey)),
+      ...(state.gresite as string[]).filter((q) => q.startsWith(quizCategoriaKey)),
+    ]).size;
+    const remaining = categoryTotal != null ? Math.max(0, categoryTotal - answered) : null;
     const score = answered > 0 ? Math.round((correct / answered) * 100) : 0;
     return { correct, wrong, answered, remaining, score };
   })();
@@ -160,7 +166,11 @@ export function NavLayout() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[350px] flex flex-col pb-8">
+              <SheetContent
+                aria-describedby={undefined}
+                side="right"
+                className="w-[300px] sm:w-[350px] flex flex-col pb-8"
+              >
                 <SheetHeader>
                   <SheetTitle>{t("common.menu")}</SheetTitle>
                 </SheetHeader>
@@ -179,7 +189,7 @@ export function NavLayout() {
                       {t("common.language")}
                     </p>
                     <DropdownMenu>
-                      <DropdownMenuTrigger className="w-full">
+                      <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-full justify-start">
                           {langs[i18n.language as keyof typeof langs]}
                         </Button>
@@ -218,6 +228,16 @@ export function NavLayout() {
                   </div>
 
                   <HomeActions />
+
+                  <Link
+                    to="/custom"
+                    preload={false}
+                    onClick={() => setSheetOpen(false)}
+                    className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg hover:bg-accent"
+                  >
+                    <BookPlus className="h-5 w-5" />
+                    {t("custom.title")}
+                  </Link>
 
                   <Social />
 
@@ -277,7 +297,7 @@ export function NavLayout() {
             {/* Desktop: inline controls */}
             <div className="hidden md:flex items-center gap-2">
               <DropdownMenu>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
                     {i18n.language}
                   </Button>
@@ -314,7 +334,10 @@ export function NavLayout() {
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-200" />
 
           {/* Panel anchored just below the navbar, slides in from top */}
-          <Dialog.Content className="fixed top-14 left-0 right-0 z-50 flex justify-center px-4 pt-3 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-4 data-[state=open]:duration-250 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-4 data-[state=closed]:duration-200">
+          <Dialog.Content
+            aria-describedby={undefined}
+            className="fixed top-14 left-0 right-0 z-50 flex justify-center px-4 pt-3 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-4 data-[state=open]:duration-250 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-4 data-[state=closed]:duration-200"
+          >
             <Card className="w-full max-w-sm shadow-2xl border-border/60">
               {/* Header */}
               <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/50">

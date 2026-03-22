@@ -1,4 +1,8 @@
 import { createRouter, createRootRoute, createRoute, Outlet, Link } from "@tanstack/react-router";
+import { initCustomStore, mergeCustomQuestions } from "./lib/customStore";
+import { CustomPage } from "./pages/custom";
+import { CustomNewPage } from "./pages/custom-new";
+import { CustomEditPage } from "./pages/custom-edit";
 import { useTranslation } from "react-i18next";
 import { Button } from "./components/ui/button";
 import {
@@ -20,6 +24,8 @@ import useLocalState from "./hooks/useLocalState";
 
 const validLangs: LangKeys[] = ["ro", "en", "de", "hu"];
 
+let storeInitialized = false;
+
 /** Reads the language saved by i18n.ts — key must match what i18n.ts writes. */
 const getCurrentLanguage = (): LangKeys => {
   if (typeof window === "undefined") return "ro";
@@ -28,10 +34,19 @@ const getCurrentLanguage = (): LangKeys => {
 };
 
 const loadQuestions = async (lang: string): Promise<Catego> => {
+  if (!storeInitialized) {
+    await initCustomStore();
+    storeInitialized = true;
+  }
   const validLang = validLangs.includes(lang as LangKeys) ? (lang as LangKeys) : "ro";
-  if (validLang === "ro") return roData as Catego;
-  const module = await import(`./data/catego-${validLang}.json`);
-  return module.default as Catego;
+  let data: Catego;
+  if (validLang === "ro") {
+    data = roData as Catego;
+  } else {
+    const module = await import(`./data/catego-${validLang}.json`);
+    data = module.default as Catego;
+  }
+  return mergeCustomQuestions(validLang, data);
 };
 
 type LoaderData = { questions: Catego; language: LangKeys };
@@ -64,10 +79,19 @@ function Index() {
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {Object.keys(questions).map((c) => {
-          const corecteCount = state.corecte.filter((q) => q.includes(c)).length;
-          const gresiteCount = state.gresite.filter((q) => q.includes(c)).length;
-          const totalCount = corecteCount + gresiteCount;
+          // Use startsWith (not includes) so "b" doesn't match custom IDs containing the letter b.
+          // Deduplicate so multiple retake attempts for the same question count once.
+          const uniqueCorecte = new Set(state.corecte.filter((q) => q.startsWith(c)));
+          const uniqueGresite = new Set(state.gresite.filter((q) => q.startsWith(c)));
+          const corecteCount = uniqueCorecte.size;
+          const gresiteCount = uniqueGresite.size;
+          // Resume index = unique questions touched, capped at category length so we never
+          // skip past the end and land immediately on the completion screen.
           const maxQuestions = questions[c].length;
+          const totalCount = Math.min(
+            new Set([...uniqueCorecte, ...uniqueGresite]).size,
+            maxQuestions,
+          );
           const percentage = maxQuestions > 0 ? (totalCount / maxQuestions) * 100 : 0;
 
           return (
@@ -143,8 +167,13 @@ function Categoria() {
   if (!chosen && !last) return <div>Loading…</div>;
 
   if (last) {
-    const wrongForCategory = (state.gresite as string[]).filter((q) => q.startsWith(categoria));
-    const correctForCategory = (state.corecte as string[]).filter((q) => q.startsWith(categoria));
+    // Deduplicate: a question answered multiple times should only count once
+    const wrongForCategory = [
+      ...new Set((state.gresite as string[]).filter((q) => q.startsWith(categoria))),
+    ];
+    const correctForCategory = [
+      ...new Set((state.corecte as string[]).filter((q) => q.startsWith(categoria))),
+    ];
     const totalAnswered = wrongForCategory.length + correctForCategory.length;
     const score =
       totalAnswered > 0 ? Math.round((correctForCategory.length / totalAnswered) * 100) : 0;
@@ -229,12 +258,19 @@ function Retake() {
 
   const raw = localStorage.getItem("state");
   const savedState = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
-  const wrongAnswers: string[] = savedState.gresite;
-  const categoryWrong = wrongAnswers.filter((q) => q.startsWith(categoria));
-  const categoryCorrect = (savedState.corecte as string[]).filter((q) => q.startsWith(categoria));
 
   const chosenCategory = questions[categoria];
+
+  // Deduplicate: a question answered multiple times only counts once
+  const categoryWrong = [
+    ...new Set((savedState.gresite as string[]).filter((q) => q.startsWith(categoria))),
+  ];
+  const categoryCorrect = [
+    ...new Set((savedState.corecte as string[]).filter((q) => q.startsWith(categoria))),
+  ];
+
   const wrongIds = new Set(categoryWrong);
+  // wrongQuestions: unique wrong questions that still exist in the category
   const wrongQuestions = chosenCategory?.filter((q) => wrongIds.has(q.id)) || [];
 
   const chosen = wrongQuestions[numarul];
@@ -247,7 +283,7 @@ function Retake() {
 
   // Finished this retake pass — check current state to decide which screen
   if (!chosen) {
-    if (categoryWrong.length > 0) {
+    if (wrongQuestions.length > 0) {
       // Still wrong answers remaining → offer another retake pass
       return (
         <div className="animate-in fade-in zoom-in duration-300">
@@ -262,7 +298,7 @@ function Retake() {
                   ✓ {categoryCorrect.length} {t("common.right")}
                 </span>
                 <span className="text-red-500">
-                  ✗ {categoryWrong.length} {t("common.wrong")}
+                  ✗ {wrongQuestions.length} {t("common.wrong")}
                 </span>
               </div>
               <Progress value={retakeScore} className="h-2" />
@@ -298,10 +334,31 @@ function Retake() {
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
+const customRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/custom",
+  component: CustomPage,
+});
+
+const customNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/custom/new",
+  component: CustomNewPage,
+});
+
+export const customEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/custom/$setId",
+  component: CustomEditPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   categoriaLayoutRoute.addChildren([categoriaRoute]),
   retakeLayoutRoute.addChildren([retakeRoute]),
+  customRoute,
+  customNewRoute,
+  customEditRoute,
 ]);
 
 const router = createRouter({
