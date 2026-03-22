@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardFooter } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import Image from "./ui/image";
 import { ArrowRight } from "lucide-react";
 import type { Category } from "../hooks/useCatego";
@@ -17,7 +17,6 @@ type TestViewProps = {
 export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const router = useRouter();
   const [active, setActive] = useState<string[]>([]);
   const [checked, setChecked] = useState(false);
   const hasImage = (chosen.i || 0) > 0;
@@ -44,23 +43,22 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
   const handleNext = () => {
     setChecked(false);
     setActive([]);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const scrollToTop = () => window.scrollTo({ top: 0, behavior: "instant" });
     if (isRetake) {
       navigate({
         to: "/retake/$categoria/$nr",
         params: { categoria, nr: String(next) },
         viewTransition: true,
-      }).then(() => router.invalidate());
+      }).then(scrollToTop);
     } else {
       navigate({
         to: "/categoria/$categoria/$nr",
         params: { categoria, nr: String(next) },
         viewTransition: true,
-      });
+      }).then(scrollToTop);
     }
   };
 
-  // Shared answer buttons — rendered once regardless of image layout
   const Answers = (
     <div className="space-y-3">
       {Object.keys(chosen.ans).map((answer: string) => (
@@ -75,83 +73,95 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
             )
           }
           disabled={checked}
-          className={`w-full p-4 rounded-lg border-2 flex items-center gap-4 transition-colors text-left ${
+          className={`w-full px-4 py-4 rounded-xl border-2 flex items-center gap-4 transition-colors text-left ${
             checked
               ? chosen.v.includes(answer)
                 ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                 : active.includes(answer)
                 ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-                : "border-input"
+                : "border-input opacity-50"
               : active.includes(answer)
               ? "border-primary bg-primary/10"
-              : "border-input hover:border-primary/50"
+              : "border-input hover:border-primary/50 hover:bg-accent/30"
           }`}
         >
-          <span className="text-2xl font-bold">{answer.toUpperCase()}.</span>
-          <span className="flex-1">{chosen.ans[answer]}</span>
+          <span className="text-xl font-bold w-8 shrink-0 text-center">
+            {answer.toUpperCase()}.
+          </span>
+          <span className="flex-1 leading-snug">{chosen.ans[answer]}</span>
         </button>
       ))}
     </div>
   );
 
-  const Footer = (
-    <CardFooter className="flex gap-4">
-      {!checked ? (
-        <Button
-          onClick={handleCheck}
-          disabled={active.length === 0}
-          className="flex-1"
-        >
-          {t("test.check")}
-        </Button>
-      ) : (
-        <Button onClick={handleNext} className="flex-1">
-          {t("test.next")}
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      )}
-    </CardFooter>
-  );
-
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-          {categoria.toUpperCase()}
-        </span>
-        <span className="px-3 py-1 rounded-full bg-secondary text-sm">
-          {t("common.question")} {next - 1}
-        </span>
-      </div>
-
-      <Card>
-        {hasImage ? (
-          <div className="flex flex-col lg:flex-row">
-            <div className="lg:w-1/2 p-6 flex items-center justify-center bg-muted rounded-l-lg">
-              <Image
-                src={`/img/${categoria}/${chosen.i}.jpg`}
-                alt="Question"
-                className="max-h-80 object-contain"
-              />
+      {/*
+        question-card: named view transition — slides left when advancing.
+        Category + question number are now in the navbar, so this wrapper
+        is purely the content card.
+      */}
+      <div style={{ viewTransitionName: "question-card" }}>
+        {/* rounded-none on mobile so the card bleeds to the screen edges,
+            rounded-xl on md+ where the container has side padding */}
+        <Card className="mb-0 md:mb-4 overflow-hidden rounded-none md:rounded-xl border-x-0 md:border-x">
+          {hasImage ? (
+            <div className="flex flex-col lg:flex-row">
+              <div className="lg:w-1/2 p-6 flex items-center justify-center bg-muted lg:rounded-l-xl">
+                <Image
+                  src={`/img/${categoria}/${chosen.i}.jpg`}
+                  alt="Question"
+                  className="max-h-72 object-contain"
+                />
+              </div>
+              <div className="lg:w-1/2">
+                <CardContent className="p-4 space-y-4">
+                  <p className="text-lg font-semibold leading-relaxed">{chosen.q}</p>
+                  {Answers}
+                </CardContent>
+              </div>
             </div>
-            <div className="lg:w-1/2">
-              <CardContent className="pt-6 space-y-4">
-                <p className="text-xl font-semibold">{chosen.q}</p>
-                {Answers}
-              </CardContent>
-              {Footer}
-            </div>
-          </div>
-        ) : (
-          <>
-            <CardContent className="pt-6 space-y-4">
-              <p className="text-xl font-semibold">{chosen.q}</p>
+          ) : (
+            <CardContent className="p-4 space-y-4">
+              <p className="text-lg font-semibold leading-relaxed">{chosen.q}</p>
               {Answers}
             </CardContent>
-            {Footer}
-          </>
-        )}
-      </Card>
+          )}
+        </Card>
+
+        {/* Spacer so the last answer clears the fixed action bar */}
+        <div className="h-24" />
+      </div>
+
+      {/*
+        action-bar: named view transition with animation:none in CSS.
+        Stays locked in position while the card slides — no flicker.
+        Safe-area padding clears the iPhone home indicator.
+      */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-sm px-3 md:px-6 pt-3"
+        style={{
+          viewTransitionName: "action-bar",
+          paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+        }}
+      >
+        <div className="max-w-2xl mx-auto">
+          {!checked ? (
+            <Button
+              onClick={handleCheck}
+              disabled={active.length === 0}
+              className="w-full h-12 text-base"
+            >
+              {t("test.check")}
+            </Button>
+          ) : (
+            <Button onClick={handleNext} className="w-full h-12 text-base">
+              {t("test.next")}
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          )}
+        </div>
+      </div>
     </>
   );
 }

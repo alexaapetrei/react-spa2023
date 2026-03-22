@@ -29,8 +29,17 @@ export function NavLayout() {
   const [offlineReady, setOfflineReady] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // "dan" is a special category that only has Romanian questions
-  const isDanRoute = routerState.location.pathname.includes("/categoria/dan/");
+  const pathname = routerState.location.pathname;
+
+  // Detect quiz routes: /categoria/<cat>/<nr>  or  /retake/<cat>/<nr>
+  const quizMatch = pathname.match(/^\/(categoria|retake)\/([^/]+)\/(\d+)/);
+  const isQuizRoute = !!quizMatch;
+  const quizCategoria = quizMatch?.[2]?.toUpperCase() ?? "";
+  const quizNr = quizMatch ? Number(quizMatch[3]) : 0;
+  const isRetake = quizMatch?.[1] === "retake";
+
+  // "dan" is a special category with Romanian-only questions
+  const isDanRoute = pathname.includes("/categoria/dan/");
   const availableLangs = isDanRoute ? { ro: langs.ro } : langs;
 
   const handleLanguageChange = (lang: string) => {
@@ -50,16 +59,41 @@ export function NavLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/bear2023.svg" alt="logo" width="40" className="rounded-sm" />
-            {offlineReady ? <span>🚀⚡</span> : <span>👩‍💻</span>}
+        {/*
+          Three-column layout:
+          [logo | shrink-0]  [quiz context | flex-1 center]  [controls | shrink-0]
+          On non-quiz routes the center is empty so it collapses naturally.
+        */}
+        <div className="container mx-auto px-4 h-14 flex items-center gap-3">
+
+          {/* ── Left: logo ── */}
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <img src="/bear2023.svg" alt="logo" width="36" className="rounded-sm" />
+            <span className="text-base leading-none">
+              {offlineReady ? "🚀⚡" : "👩‍💻"}
+            </span>
           </Link>
 
-          <div className="flex items-center gap-2">
-            {/* ── Mobile: hamburger opens sheet ── */}
+          {/* ── Center: quiz context (category + question number) ── */}
+          <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
+            {isQuizRoute && (
+              <>
+                <span className="px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold tracking-wide shrink-0">
+                  {isRetake ? `↩ ${quizCategoria}` : quizCategoria}
+                </span>
+                <span className="text-sm text-muted-foreground font-medium truncate">
+                  {t("common.question")} {quizNr}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* ── Right: controls ── */}
+          <div className="flex items-center gap-1 shrink-0">
+
+            {/* Mobile: hamburger */}
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-              <SheetTrigger>
+              <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden">
                   <Menu className="h-5 w-5" />
                 </Button>
@@ -130,7 +164,7 @@ export function NavLayout() {
               </SheetContent>
             </Sheet>
 
-            {/* ── Desktop: inline controls + hamburger for sheet ── */}
+            {/* Desktop: inline controls */}
             <div className="hidden md:flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger>
@@ -138,7 +172,7 @@ export function NavLayout() {
                     {i18n.language}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
+                <DropdownMenuContent align="end">
                   {Object.keys(availableLangs).map((c) => (
                     <DropdownMenuItem
                       key={c + "_lang"}
@@ -171,10 +205,13 @@ export function NavLayout() {
               </Button>
             </div>
           </div>
+
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 min-h-[60vh]">
+      {/* Quiz routes: no horizontal padding on mobile (card goes edge-to-edge),
+          normal container padding on desktop */}
+      <main className={`container mx-auto min-h-[60vh] ${isQuizRoute ? "px-0 md:px-4 py-0 md:py-4" : "px-4 py-8"}`}>
         <Outlet />
       </main>
     </div>

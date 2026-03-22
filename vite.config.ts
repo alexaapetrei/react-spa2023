@@ -12,9 +12,6 @@ export default defineConfig({
       allow: ['..'],
     },
   },
-  optimizeDeps: {
-    exclude: ['sql.js'],
-  },
   build: {
     rollupOptions: {
       output: {

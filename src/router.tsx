@@ -2,6 +2,7 @@ import {
   createRouter,
   createRootRoute,
   createRoute,
+  Outlet,
   Link,
 } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,7 @@ const validLangs: LangKeys[] = ["ro", "en", "de", "hu"];
 /** Reads the language saved by i18n.ts — key must match what i18n.ts writes. */
 const getCurrentLanguage = (): LangKeys => {
   if (typeof window === "undefined") return "ro";
-  const stored = localStorage.getItem("i18nLanguage"); // matches i18n.ts → "i18nLanguage"
+  const stored = localStorage.getItem("i18nLanguage");
   return validLangs.includes(stored as LangKeys) ? (stored as LangKeys) : "ro";
 };
 
@@ -56,6 +57,9 @@ const indexRoute = createRoute({
     const lang = getCurrentLanguage();
     return { questions: await loadQuestions(lang), language: lang };
   },
+  // Cache so revisiting home after answering questions doesn't re-fetch;
+  // router.invalidate() (called on language change) bypasses this.
+  staleTime: Infinity,
   component: Index,
 });
 
@@ -65,16 +69,8 @@ function Index() {
   const [state] = useLocalState();
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">
-            {t("common.encourage")}
-          </CardTitle>
-        </CardHeader>
-      </Card>
-
-      <div className="grid grid-flow-col grid-rows-2 gap-2 lg:grid-rows-1 sm:grid-cols-2">
+    <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {Object.keys(questions).map((c) => {
           const corecteCount = state.corecte.filter((q) => q.includes(c)).length;
           const gresiteCount = state.gresite.filter((q) => q.includes(c)).length;
@@ -107,26 +103,48 @@ function Index() {
           );
         })}
       </div>
+
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-lg sm:text-3xl font-bold">
+            {t("common.encourage")}
+          </CardTitle>
+        </CardHeader>
+      </Card>
     </div>
   );
 }
 
-// ─── Categoria ────────────────────────────────────────────────────────────────
+// ─── Categoria layout ─────────────────────────────────────────────────────────
+//
+// Loads questions ONCE when entering a category. Child route handles the
+// question index ($nr). Navigating between questions only re-renders the
+// child — the loader here never fires again unless the language changes
+// (nav.tsx calls router.invalidate() on language change which resets the cache).
 
-const categoriaRoute = createRoute({
+const categoriaLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/categoria/$categoria/$nr",
+  path: "/categoria/$categoria",
   loader: async () => {
     const lang = getCurrentLanguage();
     return { questions: await loadQuestions(lang), language: lang };
   },
+  staleTime: Infinity,
+  component: () => <Outlet />, // transparent — just passes through to child
+});
+
+const categoriaRoute = createRoute({
+  getParentRoute: () => categoriaLayoutRoute,
+  path: "/$nr",
   component: Categoria,
 });
 
 function Categoria() {
   const { t } = useTranslation();
+  // Params come from both parent + child routes
   const { categoria = "b", nr = "0" } = categoriaRoute.useParams();
-  const { questions } = categoriaRoute.useLoaderData() as LoaderData;
+  // Data is from the parent layout loader
+  const { questions } = categoriaLayoutRoute.useLoaderData() as LoaderData;
   const numarul = Number(nr);
 
   const raw = localStorage.getItem("state");
@@ -182,22 +200,31 @@ function Categoria() {
   );
 }
 
-// ─── Retake ───────────────────────────────────────────────────────────────────
+// ─── Retake layout ────────────────────────────────────────────────────────────
+//
+// Same pattern as categoriaLayoutRoute — questions load once per retake session.
 
-const retakeRoute = createRoute({
+const retakeLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/retake/$categoria/$nr",
+  path: "/retake/$categoria",
   loader: async () => {
     const lang = getCurrentLanguage();
     return { questions: await loadQuestions(lang), language: lang };
   },
+  staleTime: Infinity,
+  component: () => <Outlet />,
+});
+
+const retakeRoute = createRoute({
+  getParentRoute: () => retakeLayoutRoute,
+  path: "/$nr",
   component: Retake,
 });
 
 function Retake() {
   const { t } = useTranslation();
   const { categoria = "b", nr = "0" } = retakeRoute.useParams();
-  const { questions } = retakeRoute.useLoaderData() as LoaderData;
+  const { questions } = retakeLayoutRoute.useLoaderData() as LoaderData;
   const numarul = Number(nr);
 
   const raw = localStorage.getItem("state");
@@ -264,8 +291,8 @@ function Retake() {
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  categoriaRoute,
-  retakeRoute,
+  categoriaLayoutRoute.addChildren([categoriaRoute]),
+  retakeLayoutRoute.addChildren([retakeRoute]),
 ]);
 
 const router = createRouter({
