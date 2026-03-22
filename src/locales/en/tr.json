@@ -36,6 +36,9 @@
     "check": "Check Answers",
     "update": "Update",
     "next": "Next",
-    "scoreOf": "{{score}}% — {{answered}} of {{total}} answered"
+    "scoreOf": "{{score}}% — {{answered}} of {{total}} answered",
+    "yourProgress": "Your progress",
+    "answered": "answered",
+    "left": "left"
   }
 }

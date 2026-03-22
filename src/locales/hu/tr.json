@@ -36,6 +36,9 @@
     "check": "Válaszok ellenőrzése",
     "update": "Frissítés",
     "next": "Következő",
-    "scoreOf": "{{score}}% — {{answered}} / {{total}} megválaszolva"
+    "scoreOf": "{{score}}% — {{answered}} / {{total}} megválaszolva",
+    "yourProgress": "Haladásod",
+    "answered": "megválaszolva",
+    "left": "maradt"
   }
 }
