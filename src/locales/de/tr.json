@@ -36,6 +36,9 @@
     "check": "Antworten überprüfen",
     "update": "Aktualisieren",
     "next": "Weiter",
-    "scoreOf": "{{score}}% — {{answered}} von {{total}} beantwortet"
+    "scoreOf": "{{score}}% — {{answered}} von {{total}} beantwortet",
+    "yourProgress": "Dein Fortschritt",
+    "answered": "beantwortet",
+    "left": "übrig"
   }
 }

@@ -36,6 +36,9 @@
     "check": "Verifică răspunsurile",
     "update": "Actualizează",
     "next": "Următoarea",
-    "scoreOf": "{{score}}% — {{answered}} din {{total}} răspunse"
+    "scoreOf": "{{score}}% — {{answered}} din {{total}} răspunse",
+    "yourProgress": "Progresul tău",
+    "answered": "răspunse",
+    "left": "rămase"
   }
 }
