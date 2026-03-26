@@ -11,7 +11,7 @@ const DEFAULT_STATE: localState = { corecte: [], gresite: [] };
  * the components that mutate it so saves are easy to reason about.
  */
 function useLocalState(
-  defaultState: localState = DEFAULT_STATE
+  defaultState: localState = DEFAULT_STATE,
 ): [localState, React.Dispatch<React.SetStateAction<localState>>] {
   const [state, setState] = useState<localState>(() => {
     try {

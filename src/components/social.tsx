@@ -51,7 +51,7 @@ export function Social() {
     },
   ];
 
-  const visibleLinks = socialLinks.filter(link => link.show);
+  const visibleLinks = socialLinks.filter((link) => link.show);
 
   return (
     <div className="mt-auto pt-4">
@@ -62,7 +62,13 @@ export function Social() {
             key={index}
             className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
             href={link.href}
-            target={!link.href.startsWith('sms:') && !link.href.startsWith('whatsapp:') && !link.href.startsWith('mailto:') ? "_blank" : undefined}
+            target={
+              !link.href.startsWith("sms:") &&
+              !link.href.startsWith("whatsapp:") &&
+              !link.href.startsWith("mailto:")
+                ? "_blank"
+                : undefined
+            }
             rel="noopener noreferrer"
           >
             <link.icon className="h-4 w-4" />
