@@ -16,22 +16,22 @@ const languages = ["en", "ro", "de", "hu"];
 
 async function loadTranslations() {
   const resources: Resources = {};
-  
+
   const translations = await Promise.all(
     languages.map(async (lang) => {
       const module = await import(`./locales/${lang}/tr.json`);
       return { lang, translation: module.default };
-    })
+    }),
   );
-  
+
   translations.forEach(({ lang, translation }) => {
     resources[lang] = { translation };
   });
-  
+
   return resources;
 }
 
-loadTranslations().then((resources) => {
+export const i18nReady = loadTranslations().then((resources) =>
   i18n
     .use(LanguageDetector)
     .use(initReactI18next)
@@ -46,8 +46,8 @@ loadTranslations().then((resources) => {
         order: ["localStorage", "navigator"],
         caches: ["localStorage"],
       },
-    });
-});
+    }),
+);
 
 i18n.on("languageChanged", function (lng) {
   localStorage.setItem("i18nLanguage", lng);
