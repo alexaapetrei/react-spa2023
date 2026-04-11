@@ -2,10 +2,17 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "@tanstack/react-form";
 import { Trash2 } from "lucide-react";
+import { useRow } from "tinybase/ui-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { saveSet, saveQuestion, getCategoryKeysForLang, getSetById } from "../lib/customStore";
-import type { QuestionRow } from "../lib/customStore";
+import {
+  saveSet,
+  saveQuestion,
+  getCategoryKeysForLang,
+  getSetById,
+  store,
+  type QuestionRow,
+} from "../lib/customStore";
 import { hasCustomCategoryKeyCollision, slugifyCustomCategoryName } from "../lib/customCategory";
 
 type AnswerValue = {
@@ -16,7 +23,7 @@ type AnswerValue = {
 
 type Props = {
   setId?: string;
-  editQuestion?: { id: string } & QuestionRow;
+  editQuestionId?: string;
   resetKey?: number;
   onSaved?: () => void;
   onQuestionSaved?: (questionText: string, setId: string) => void;
@@ -33,22 +40,38 @@ function readFileAsDataURL(file: File): Promise<string> {
   });
 }
 
-function rowToAnswers(row: QuestionRow): AnswerValue[] {
-  return LETTERS.filter((l) => row[l as keyof QuestionRow]).map((l) => ({
+function rowToAnswers(row: {
+  v: string;
+  a?: string;
+  b?: string;
+  c?: string;
+  d?: string;
+  e?: string;
+  f?: string;
+  g?: string;
+  h?: string;
+  i?: string;
+  j?: string;
+}): AnswerValue[] {
+  return LETTERS.filter((l) => row[l as keyof typeof row]).map((l) => ({
     letter: l,
-    text: (row[l as keyof QuestionRow] as string) ?? "",
+    text: (row[l as keyof typeof row] as string) ?? "",
     correct: row.v.includes(l),
   }));
 }
 
 export function CustomQuestionForm({
   setId: initialSetId,
-  editQuestion,
+  editQuestionId,
   resetKey,
   onSaved,
   onQuestionSaved,
 }: Props) {
   const { t, i18n } = useTranslation();
+  const editQuestionRow = useRow("questions", editQuestionId ?? "", store);
+  const editQuestion = editQuestionRow
+    ? ({ id: editQuestionId!, ...(editQuestionRow as unknown as QuestionRow) } as const)
+    : null;
   const isNewSet = !initialSetId;
   const isEditing = !!editQuestion;
 
@@ -77,13 +100,7 @@ export function CustomQuestionForm({
   const Field = form.Field;
 
   const resetQuestionFields = () => {
-    form.setFieldValue("questionText", "");
-    form.setFieldValue("answers", [
-      { letter: "a", text: "", correct: false },
-      { letter: "b", text: "", correct: false },
-    ]);
-    form.setFieldValue("imageData", "");
-    form.setFieldValue("imageExt", "");
+    form.reset();
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
@@ -111,7 +128,7 @@ export function CustomQuestionForm({
 
   React.useEffect(() => {
     if (resetKey === undefined) return;
-    resetQuestionFields();
+    form.reset();
     setTimeout(() => questionRef.current?.focus(), 0);
   }, [resetKey]);
 
@@ -252,7 +269,7 @@ export function CustomQuestionForm({
       onQuestionSaved?.(questionTextValue.trim(), setIdToUse);
     }
 
-    resetQuestionFields();
+    form.reset();
     setTimeout(() => questionRef.current?.focus(), 0);
 
     return questionId;
@@ -460,10 +477,7 @@ export function CustomQuestionForm({
                 onClick={async () => {
                   const qId = await handleSaveNext();
                   if (qId && onQuestionSaved) {
-                    onQuestionSaved(
-                      form.getFieldValue("questionText") ?? "",
-                      currentSetId ?? setId ?? "",
-                    );
+                    onQuestionSaved(form.getFieldValue("questionText") ?? "", currentSetId ?? "");
                   }
                 }}
                 className="w-full"

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "@tanstack/react-router";
-import * as Dialog from "@radix-ui/react-dialog";
 import { Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { RowProps, SliceView, useRow, useRowIds, useSliceRowIds } from "tinybase/ui-react";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -14,37 +14,128 @@ import {
 } from "../components/ui/card";
 import { CustomImport } from "../components/custom-import";
 import { langs } from "../i18n";
-import {
-  addCustomStoreChangeListener,
-  deleteSet,
-  getAllSets,
-  getQuestionsForSet,
-} from "../lib/customStore";
+import { deleteSet, indexes, store, type SetRow } from "../lib/customStore";
 import { exportSetAsZip } from "../lib/customZip";
-import type { SetRow } from "../lib/customStore";
 import { normalizeLegacyCustomCategoryKey } from "../lib/customCategory";
+import * as Dialog from "@radix-ui/react-dialog";
 
 type LangKey = keyof typeof langs;
-type SetItem = { id: string } & SetRow;
 
 const ALL_LANGS = Object.keys(langs) as LangKey[];
 
+function SetCard({ rowId, onDelete }: { rowId: RowProps["rowId"]; onDelete: () => void }) {
+  const { t, i18n } = useTranslation();
+  const row = useRow("sets", rowId, store);
+  const questionCount = useSliceRowIds("bySet", rowId, indexes).length;
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  if (!row) return null;
+
+  const set = row as unknown as SetRow;
+
+  const createdAt = new Intl.DateTimeFormat(i18n.language, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(set.createdAt));
+
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-border pb-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2">
+            <CardTitle className="text-[24px] font-medium leading-[1.15]">{set.name}</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              {t("custom.setMeta", {
+                count: questionCount,
+                createdAt,
+              })}
+            </CardDescription>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              {set.lang}
+            </span>
+            <span className="border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              {normalizeLegacyCustomCategoryKey(set.categoryKey, set.name)}
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardFooter className="flex flex-col items-start gap-3 pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2">
+          <Link to="/custom/$setId" params={{ setId: rowId }} preload={false}>
+            <Button variant="outline" size="sm">
+              <Pencil className="mr-2 h-4 w-4" />
+              {t("custom.editSet")}
+            </Button>
+          </Link>
+          <Button variant="outline" size="sm" onClick={() => exportSetAsZip(rowId)}>
+            <Download className="mr-2 h-4 w-4" />
+            {t("custom.exportZip")}
+          </Button>
+        </div>
+
+        <Dialog.Root open={isDeleting} onOpenChange={setIsDeleting}>
+          <Dialog.Trigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t("custom.deleteSet")}
+            </Button>
+          </Dialog.Trigger>
+
+          <Dialog.Portal>
+            <Dialog.Overlay className="editorial-dialog-overlay" />
+            <Dialog.Content className="editorial-dialog-content">
+              <Card className="w-full max-w-sm">
+                <CardHeader>
+                  <p className="editorial-kicker">{t("custom.deleteLabel")}</p>
+                  <Dialog.Title className="text-[24px] font-medium leading-[1.2]">
+                    {t("custom.deleteConfirmTitle")}
+                  </Dialog.Title>
+                  <Dialog.Description className="text-[13px] text-muted-foreground">
+                    {t("custom.deleteConfirmText")}
+                  </Dialog.Description>
+                </CardHeader>
+                <CardFooter className="justify-end gap-2">
+                  <Dialog.Close asChild>
+                    <Button variant="outline">{t("common.cancel")}</Button>
+                  </Dialog.Close>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      onDelete();
+                      setIsDeleting(false);
+                    }}
+                  >
+                    {t("custom.deleteSet")}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      </CardFooter>
+    </Card>
+  );
+}
+
 export function CustomPage() {
   const { t, i18n } = useTranslation();
-  const [sets, setSets] = useState<SetItem[]>([]);
   const [selectedLang, setSelectedLang] = useState<LangKey>((i18n.language as LangKey) || "ro");
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
-
-  const refresh = () => {
-    setSets(getAllSets());
-  };
-
-  useEffect(() => {
-    refresh();
-  }, []);
-
-  useEffect(() => addCustomStoreChangeListener(refresh), []);
+  const allQuestionIds = useRowIds("questions", store);
+  const filteredSetIds = useSliceRowIds("setsByLang", selectedLang, indexes);
+  const roCount = useSliceRowIds("setsByLang", "ro", indexes).length;
+  const enCount = useSliceRowIds("setsByLang", "en", indexes).length;
+  const deCount = useSliceRowIds("setsByLang", "de", indexes).length;
+  const huCount = useSliceRowIds("setsByLang", "hu", indexes).length;
 
   useEffect(() => {
     const current = i18n.language as LangKey;
@@ -53,41 +144,25 @@ export function CustomPage() {
     }
   }, [i18n.language]);
 
-  const counts = useMemo(() => {
-    return ALL_LANGS.reduce<Record<LangKey, number>>(
-      (acc, lang) => {
-        acc[lang] = sets.filter((set) => set.lang === lang).length;
-        return acc;
-      },
-      { ro: 0, en: 0, de: 0, hu: 0 },
-    );
-  }, [sets]);
-
-  const filteredSets = useMemo(
-    () => sets.filter((set) => set.lang === selectedLang).sort((a, b) => b.createdAt - a.createdAt),
-    [selectedLang, sets],
+  const totalQuestions = useMemo(
+    () =>
+      filteredSetIds.reduce((sum, setId) => sum + indexes.getSliceRowIds("bySet", setId).length, 0),
+    [filteredSetIds, allQuestionIds],
   );
 
-  const totalQuestions = filteredSets.reduce(
-    (sum, set) => sum + getQuestionsForSet(set.id).length,
-    0,
-  );
+  const counts: Record<LangKey, number> = {
+    ro: roCount,
+    en: enCount,
+    de: deCount,
+    hu: huCount,
+  };
 
   const handleDelete = (setId: string) => {
     deleteSet(setId);
-    setDeleteTarget(null);
-    refresh();
   };
 
   if (showImport) {
-    return (
-      <CustomImport
-        onDone={() => {
-          setShowImport(false);
-          refresh();
-        }}
-      />
-    );
+    return <CustomImport onDone={() => setShowImport(false)} />;
   }
 
   return (
@@ -108,7 +183,7 @@ export function CustomPage() {
                 <Upload className="mr-2 h-4 w-4" />
                 {t("custom.importAction")}
               </Button>
-              <Link to={"/custom/new" as any} preload={false}>
+              <Link to="/custom/new" preload={false}>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
                   {t("custom.newSet")}
@@ -163,7 +238,7 @@ export function CustomPage() {
             <div>
               <span className="editorial-kicker block">{t("custom.setCountLabel")}</span>
               <span className="mt-1 block text-[18px] font-medium text-foreground">
-                {filteredSets.length}
+                {filteredSetIds.length}
               </span>
             </div>
             <div>
@@ -175,7 +250,7 @@ export function CustomPage() {
           </div>
         </div>
 
-        {filteredSets.length === 0 ? (
+        {filteredSetIds.length === 0 ? (
           <Card>
             <CardContent className="space-y-4 py-12 text-center">
               <p className="editorial-kicker">{(selectedLang as string).toUpperCase()}</p>
@@ -185,7 +260,7 @@ export function CustomPage() {
                   <Upload className="mr-2 h-4 w-4" />
                   {t("custom.importAction")}
                 </Button>
-                <Link to={"/custom/new" as any} preload={false}>
+                <Link to="/custom/new" preload={false}>
                   <Button size="sm">
                     <Plus className="mr-2 h-4 w-4" />
                     {t("custom.newSet")}
@@ -196,102 +271,13 @@ export function CustomPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredSets.map((set) => {
-              const questionCount = getQuestionsForSet(set.id).length;
-              const createdAt = new Intl.DateTimeFormat(i18n.language, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              }).format(new Date(set.createdAt));
-
-              return (
-                <Card key={set.id} className="overflow-hidden">
-                  <CardHeader className="border-b border-border pb-5">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="space-y-2">
-                        <CardTitle className="text-[24px] font-medium leading-[1.15]">
-                          {set.name}
-                        </CardTitle>
-                        <CardDescription className="text-sm text-muted-foreground">
-                          {t("custom.setMeta", {
-                            count: questionCount,
-                            createdAt,
-                          })}
-                        </CardDescription>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <span className="border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                          {set.lang}
-                        </span>
-                        <span className="border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                          {normalizeLegacyCustomCategoryKey(set.categoryKey, set.name)}
-                        </span>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardFooter className="flex flex-col items-start gap-3 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex flex-wrap gap-2">
-                      <Link {...({ to: "/custom/$setId", params: { setId: set.id } } as any)}>
-                        <Button variant="outline" size="sm">
-                          <Pencil className="mr-2 h-4 w-4" />
-                          {t("custom.editSet")}
-                        </Button>
-                      </Link>
-                      <Button variant="outline" size="sm" onClick={() => exportSetAsZip(set.id)}>
-                        <Download className="mr-2 h-4 w-4" />
-                        {t("custom.exportZip")}
-                      </Button>
-                    </div>
-
-                    <Dialog.Root
-                      open={deleteTarget === set.id}
-                      onOpenChange={(open) => {
-                        if (!open) setDeleteTarget(null);
-                      }}
-                    >
-                      <Dialog.Trigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() => setDeleteTarget(set.id)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          {t("custom.deleteSet")}
-                        </Button>
-                      </Dialog.Trigger>
-
-                      <Dialog.Portal>
-                        <Dialog.Overlay className="editorial-dialog-overlay" />
-                        <Dialog.Content className="editorial-dialog-content">
-                          <Card className="w-full max-w-sm">
-                            <CardHeader>
-                              <p className="editorial-kicker">{t("custom.deleteLabel")}</p>
-                              <Dialog.Title className="text-[24px] font-medium leading-[1.2]">
-                                {t("custom.deleteConfirmTitle")}
-                              </Dialog.Title>
-                              <Dialog.Description className="text-[13px] text-muted-foreground">
-                                {t("custom.deleteConfirmText")}
-                              </Dialog.Description>
-                            </CardHeader>
-                            <CardFooter className="justify-end gap-2">
-                              <Dialog.Close asChild>
-                                <Button variant="outline">{t("common.cancel")}</Button>
-                              </Dialog.Close>
-                              <Button variant="destructive" onClick={() => handleDelete(set.id)}>
-                                {t("custom.deleteSet")}
-                              </Button>
-                            </CardFooter>
-                          </Card>
-                        </Dialog.Content>
-                      </Dialog.Portal>
-                    </Dialog.Root>
-                  </CardFooter>
-                </Card>
-              );
-            })}
+            <SliceView
+              indexId="setsByLang"
+              sliceId={selectedLang}
+              indexes={indexes}
+              rowComponent={SetCard}
+              getRowComponentProps={(rowId) => ({ onDelete: () => handleDelete(rowId) })}
+            />
           </div>
         )}
       </section>

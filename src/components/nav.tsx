@@ -33,7 +33,7 @@ import { HomeActions } from "./home-actions";
 import { Progress } from "./ui/progress";
 import { Card, CardContent } from "./ui/card";
 import { isQuestionIdForCategory } from "../lib/categoryProgress";
-import { redoCustomStoreChange, undoCustomStoreChange } from "../lib/customStore";
+import { useCustomUndo } from "../hooks/useCustomUndo";
 
 function isTextEditingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
@@ -45,6 +45,7 @@ export function NavLayout() {
   const router = useRouter();
   const routerState = useRouterState();
   const { theme, setTheme } = useTheme();
+  const { undo: undoCustom, redo: redoCustom } = useCustomUndo();
   const [offlineReady, setOfflineReady] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
@@ -132,13 +133,15 @@ export function NavLayout() {
       }
 
       const key = event.key.toLowerCase();
-      const didHandleUndo = key === "z" && !event.shiftKey && undoCustomStoreChange();
-      const didHandleRedo =
-        ((key === "z" && event.shiftKey) || key === "y") && redoCustomStoreChange();
+      const didHandleUndo = key === "z" && !event.shiftKey;
+      const didHandleRedo = (key === "z" && event.shiftKey) || key === "y";
 
-      if (didHandleUndo || didHandleRedo) {
+      if (didHandleUndo) {
         event.preventDefault();
-        router.invalidate();
+        undoCustom();
+      } else if (didHandleRedo) {
+        event.preventDefault();
+        redoCustom();
       }
     };
 
@@ -165,7 +168,7 @@ export function NavLayout() {
         <div className="container mx-auto flex h-16 items-center gap-3 px-4">
           {/* ── Left: logo ── */}
           <Link to="/" className="flex shrink-0 items-center gap-2">
-            <img src="/bear2023.svg" alt="logo" width="36" className="invert" />
+            <img src="/bear2023.svg" alt="logo" width="36" />
           </Link>
 
           {/* ── Center: quiz context pill — clickable progress button ── */}

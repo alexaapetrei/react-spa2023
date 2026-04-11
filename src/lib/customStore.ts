@@ -1,5 +1,6 @@
 import { createStore } from "tinybase";
 import { createCheckpoints } from "tinybase/checkpoints";
+import { createIndexes } from "tinybase/indexes";
 import { createIndexedDbPersister } from "tinybase/persisters/persister-indexed-db";
 import type { Catego, Category } from "../hooks/useCatego";
 import { createCustomQuestionId } from "./categoryProgress";
@@ -31,6 +32,9 @@ export type QuestionRow = {
 
 export const store = createStore();
 export const checkpoints = createCheckpoints(store).setSize(100);
+export const indexes = createIndexes(store);
+indexes.setIndexDefinition("bySet", "questions", "setId");
+indexes.setIndexDefinition("setsByLang", "sets", "lang");
 
 const persister = createIndexedDbPersister(store, "ursdb-custom");
 

@@ -77,4 +77,10 @@ These commands map to their corresponding tools. For example, `vp dev --port 300
 
 For any file search or grep in the current git indexed directory use fff tools
 
+For state management, do not use `useEffect` if TanStack Router or TinyBase can express the same behavior.
+
+- Prefer TanStack Router loaders, invalidation, route state, and navigation-driven state over `useEffect`.
+- Prefer TinyBase reactive hooks, indexes, views, and store listeners over `useEffect`.
+- Only use `useEffect` for behavior that cannot be expressed cleanly with Router or TinyBase.
+
 For ui and design related tasks please reffer to DESIGN.md

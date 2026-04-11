@@ -1,60 +1,49 @@
-import { useState, useCallback, useEffect } from "react";
-import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Undo2 } from "lucide-react";
+import { SliceView, RowProps, useRow, useSliceRowIds } from "tinybase/ui-react";
 import { Button } from "../components/ui/button";
 import { CustomQuestionForm } from "../components/custom-question-form";
-import { addCustomStoreChangeListener, getQuestionsForSet, getSetById } from "../lib/customStore";
 import { useCustomUndo } from "../hooks/useCustomUndo";
+import { indexes, store, type QuestionRow } from "../lib/customStore";
+
+/**
+ * Leaf component that renders a single question text.
+ * Uses useQuestion to subscribe only to its own row.
+ */
+function QuestionListText({ rowId, index }: RowProps & { index: number }) {
+  const row = useRow("questions", rowId, store);
+
+  if (!row) return null;
+
+  const question = row as unknown as QuestionRow;
+
+  return (
+    <div className="editorial-sidebar-item border-b border-border/70 last:border-b-0">
+      <span className="font-mono text-xs text-muted-foreground shrink-0 mt-0.5 w-5">
+        {index + 1}.
+      </span>
+      <span className="line-clamp-2 flex-1 min-w-0">{question.q}</span>
+    </div>
+  );
+}
 
 export function CustomNewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const router = useRouter();
   const { canUndo, undo } = useCustomUndo();
   const [currentSetId, setCurrentSetId] = useState<string | undefined>();
-  const [savedQuestions, setSavedQuestions] = useState<string[]>([]);
 
-  const refreshSavedQuestions = useCallback(
-    (setId = currentSetId) => {
-      if (!setId) {
-        setSavedQuestions([]);
-        return;
-      }
+  const questionIds = useSliceRowIds("bySet", currentSetId ?? "__none__", indexes);
 
-      if (!getSetById(setId)) {
-        setCurrentSetId(undefined);
-        setSavedQuestions([]);
-        return;
-      }
+  const handleQuestionSaved = (_questionText: string, setId: string) => {
+    setCurrentSetId(setId);
+  };
 
-      setSavedQuestions(getQuestionsForSet(setId).map((question) => question.q));
-    },
-    [currentSetId],
-  );
-
-  useEffect(
-    () => addCustomStoreChangeListener(() => refreshSavedQuestions()),
-    [refreshSavedQuestions],
-  );
-
-  const handleQuestionSaved = useCallback(
-    (_questionText: string, setId: string) => {
-      setCurrentSetId(setId);
-      refreshSavedQuestions(setId);
-    },
-    [refreshSavedQuestions],
-  );
-
-  const handleUndo = useCallback(() => {
-    if (!undo()) return;
-    refreshSavedQuestions();
-    router.invalidate();
-  }, [refreshSavedQuestions, router, undo]);
-
-  const goBackToCustomSets = useCallback(() => {
-    navigate({ to: "/custom" as any });
-  }, [navigate]);
+  const goBackToCustomSets = () => {
+    navigate({ to: "/custom" });
+  };
 
   return (
     <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
@@ -63,27 +52,27 @@ export function CustomNewPage() {
           <div className="flex items-center justify-between border-b border-white/10 bg-black px-4 py-4 text-white">
             <p className="editorial-label text-white/60">{t("custom.existingQuestions")}</p>
             <span className="border border-white/20 px-2 py-0.5 text-[11px] uppercase tracking-[0.18em] text-white/70">
-              {savedQuestions.length}
+              {questionIds.length}
             </span>
           </div>
           <div className="lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto">
-            {savedQuestions.length === 0 ? (
+            {questionIds.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8 px-4">
                 {t("custom.noQuestions")}
               </p>
             ) : (
               <div className="p-2 space-y-1">
-                {savedQuestions.map((q, idx) => (
-                  <div
-                    key={idx}
-                    className="editorial-sidebar-item border-b border-border/70 last:border-b-0"
-                  >
-                    <span className="font-mono text-xs text-muted-foreground shrink-0 mt-0.5 w-5">
-                      {idx + 1}.
-                    </span>
-                    <span className="line-clamp-2 flex-1 min-w-0">{q}</span>
-                  </div>
-                ))}
+                {currentSetId ? (
+                  <SliceView
+                    indexId="bySet"
+                    sliceId={currentSetId}
+                    indexes={indexes}
+                    rowComponent={QuestionListText}
+                    getRowComponentProps={(rowId) => ({
+                      index: questionIds.indexOf(rowId),
+                    })}
+                  />
+                ) : null}
               </div>
             )}
           </div>
@@ -112,7 +101,7 @@ export function CustomNewPage() {
               variant="outline"
               size="sm"
               disabled={!canUndo}
-              onClick={handleUndo}
+              onClick={undo}
               title={t("common.undo")}
               className="border-white bg-transparent text-white hover:border-white/70 hover:bg-white/10 hover:text-white"
             >

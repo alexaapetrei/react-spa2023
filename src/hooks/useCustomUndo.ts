@@ -1,30 +1,9 @@
-import { useEffect, useState } from "react";
-import {
-  addCustomUndoListener,
-  getCustomUndoState,
-  undoCustomStoreChange,
-} from "../lib/customStore";
+import { useUndoInformation, useRedoInformation } from "tinybase/ui-react";
+import { checkpoints } from "../lib/customStore";
 
-export function useCustomUndo(): {
-  canUndo: boolean;
-  undoLabel: string;
-  undo: () => boolean;
-} {
-  const [undoState, setUndoState] = useState(getCustomUndoState);
+export function useCustomUndo() {
+  const [canUndo, undo, , undoLabel] = useUndoInformation(checkpoints);
+  const [canRedo, redo, , redoLabel] = useRedoInformation(checkpoints);
 
-  useEffect(() => addCustomUndoListener(() => setUndoState(getCustomUndoState())), []);
-
-  const undo = () => {
-    const didUndo = undoCustomStoreChange();
-    if (didUndo) {
-      setUndoState(getCustomUndoState());
-    }
-    return didUndo;
-  };
-
-  return {
-    canUndo: undoState.canUndo,
-    undoLabel: undoState.label,
-    undo,
-  };
+  return { canUndo, canRedo, undoLabel, redoLabel, undo, redo };
 }

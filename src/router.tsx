@@ -1,4 +1,11 @@
-import { createRouter, createRootRoute, createRoute, Outlet, Link } from "@tanstack/react-router";
+import {
+  createRouter,
+  createRootRoute,
+  createRoute,
+  Outlet,
+  Link,
+  useNavigate,
+} from "@tanstack/react-router";
 import {
   getSetsForLang,
   initCustomStore,
@@ -21,13 +28,15 @@ import {
 } from "./components/ui/card";
 import { Progress } from "./components/ui/progress";
 import { RotateCcw } from "lucide-react";
-import type { Catego, LangKeys } from "./hooks/useCatego";
+import type { LangKeys } from "./hooks/useCatego";
 import roData from "./data/catego.json";
 import { NavLayout } from "./components/nav";
 import { TestView } from "./components/test-view";
 import { FinishedCard } from "./components/finished-card";
 import useLocalState from "./hooks/useLocalState";
 import { isQuestionIdForCategory } from "./lib/categoryProgress";
+import { DefaultErrorBoundary } from "./components/DefaultErrorBoundary";
+import { NotFoundPage } from "./components/NotFoundPage";
 
 const validLangs: LangKeys[] = ["ro", "en", "de", "hu"];
 
@@ -56,8 +65,6 @@ const loadQuestions = async (lang: string): Promise<Catego> => {
   return mergeCustomQuestions(validLang, data);
 };
 
-type LoaderData = { questions: Catego; language: LangKeys };
-
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 const rootRoute = createRootRoute({ component: NavLayout });
@@ -77,9 +84,57 @@ const indexRoute = createRoute({
   component: Index,
 });
 
+function CategoryCard({
+  categoryKey,
+  categoryName,
+  totalCount,
+  corecteCount,
+  gresiteCount,
+  percentage,
+}: {
+  categoryKey: string;
+  categoryName: string;
+  totalCount: number;
+  corecteCount: number;
+  gresiteCount: number;
+  percentage: number;
+}) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        navigate({
+          to: "/categoria/$categoria/$nr",
+          params: { categoria: categoryKey, nr: String(totalCount) },
+        })
+      }
+      className="text-left"
+    >
+      <Card className="cursor-pointer transition-colors hover:border-foreground hover:bg-accent dark:hover:border-white dark:hover:bg-white/5">
+        <CardHeader className="border-b border-border pb-4">
+          <p className="editorial-kicker text-center">{t("custom.category")}</p>
+          <CardTitle className="text-center text-[24px] font-medium">
+            {categoryName.toUpperCase()}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 pt-6">
+          <Progress value={percentage} />
+          <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <span className="text-green-600">{corecteCount} ✓</span>
+            <span className="text-red-600">{gresiteCount} ✗</span>
+          </div>
+        </CardContent>
+      </Card>
+    </button>
+  );
+}
+
 function Index() {
   const { t } = useTranslation();
-  const { questions, language } = indexRoute.useLoaderData() as LoaderData;
+  const { questions, language } = indexRoute.useLoaderData();
   const [state] = useLocalState();
   const customCategoryNames = new Map(
     getSetsForLang(language).map((set) => [set.categoryKey, set.name]),
@@ -113,23 +168,15 @@ function Index() {
           const categoryName = customCategoryNames.get(c) ?? c;
 
           return (
-            <Link key={c} to={`/categoria/${c}/${totalCount}` as any} preload={false}>
-              <Card className="cursor-pointer transition-colors hover:border-foreground hover:bg-accent dark:hover:border-white dark:hover:bg-white/5">
-                <CardHeader className="border-b border-border pb-4">
-                  <p className="editorial-kicker text-center">{t("custom.category")}</p>
-                  <CardTitle className="text-center text-[24px] font-medium">
-                    {categoryName.toUpperCase()}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 pt-6">
-                  <Progress value={percentage} />
-                  <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    <span className="text-green-600">{corecteCount} ✓</span>
-                    <span className="text-red-600">{gresiteCount} ✗</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+            <CategoryCard
+              key={c}
+              categoryKey={c}
+              categoryName={categoryName}
+              totalCount={totalCount}
+              corecteCount={corecteCount}
+              gresiteCount={gresiteCount}
+              percentage={percentage}
+            />
           );
         })}
       </div>
@@ -173,15 +220,17 @@ const categoriaRoute = createRoute({
 function Categoria() {
   const { t } = useTranslation();
   // Params come from both parent + child routes
-  const { categoria = "b", nr = "0" } = categoriaRoute.useParams();
+  const { categoria, nr } = categoriaRoute.useParams({ strict: false });
+  const categoriaKey = categoria ?? "b";
+  const nrValue = nr ?? "0";
   // Data is from the parent layout loader
-  const { questions } = categoriaLayoutRoute.useLoaderData() as LoaderData;
-  const numarul = Number(nr);
+  const { questions } = categoriaLayoutRoute.useLoaderData();
+  const numarul = Number(nrValue);
 
   const raw = localStorage.getItem("state");
   const state = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
 
-  const chosenCategory = questions[categoria];
+  const chosenCategory = questions[categoriaKey];
   const chosen = chosenCategory?.[numarul];
   const last = !chosenCategory || numarul >= chosenCategory.length;
   const next = last ? chosenCategory?.length || 0 : numarul + 1;
@@ -191,10 +240,14 @@ function Categoria() {
   if (last) {
     // Deduplicate: a question answered multiple times should only count once
     const wrongForCategory = [
-      ...new Set((state.gresite as string[]).filter((q) => isQuestionIdForCategory(q, categoria))),
+      ...new Set(
+        (state.gresite as string[]).filter((q) => isQuestionIdForCategory(q, categoriaKey)),
+      ),
     ];
     const correctForCategory = [
-      ...new Set((state.corecte as string[]).filter((q) => isQuestionIdForCategory(q, categoria))),
+      ...new Set(
+        (state.corecte as string[]).filter((q) => isQuestionIdForCategory(q, categoriaKey)),
+      ),
     ];
     const totalAnswered = wrongForCategory.length + correctForCategory.length;
     const score =
@@ -227,7 +280,12 @@ function Categoria() {
               </p>
             </CardContent>
             <CardFooter className="justify-center">
-              <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
+              <Link
+                to="/retake/$categoria/$nr"
+                params={{ categoria: categoriaKey, nr: "0" }}
+                preload={false}
+                viewTransition
+              >
                 <Button>
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {t("test.startRetest")}
@@ -243,12 +301,12 @@ function Categoria() {
       <FinishedCard
         correct={correctForCategory.length}
         total={totalAnswered}
-        categoria={categoria}
+        categoria={categoriaKey}
       />
     );
   }
 
-  return <TestView chosen={chosen} categoria={categoria} next={next} isRetake={false} />;
+  return <TestView chosen={chosen} categoria={categoriaKey} next={next} isRetake={false} />;
 }
 
 // ─── Retake layout ────────────────────────────────────────────────────────────
@@ -274,24 +332,26 @@ const retakeRoute = createRoute({
 
 function Retake() {
   const { t } = useTranslation();
-  const { categoria = "b", nr = "0" } = retakeRoute.useParams();
-  const { questions } = retakeLayoutRoute.useLoaderData() as LoaderData;
-  const numarul = Number(nr);
+  const { categoria, nr } = retakeRoute.useParams({ strict: false });
+  const categoriaKey = categoria ?? "b";
+  const nrValue = nr ?? "0";
+  const { questions } = retakeLayoutRoute.useLoaderData();
+  const numarul = Number(nrValue);
 
   const raw = localStorage.getItem("state");
   const savedState = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
 
-  const chosenCategory = questions[categoria];
+  const chosenCategory = questions[categoriaKey];
 
   // Deduplicate: a question answered multiple times only counts once
   const categoryWrong = [
     ...new Set(
-      (savedState.gresite as string[]).filter((q) => isQuestionIdForCategory(q, categoria)),
+      (savedState.gresite as string[]).filter((q) => isQuestionIdForCategory(q, categoriaKey)),
     ),
   ];
   const categoryCorrect = [
     ...new Set(
-      (savedState.corecte as string[]).filter((q) => isQuestionIdForCategory(q, categoria)),
+      (savedState.corecte as string[]).filter((q) => isQuestionIdForCategory(q, categoriaKey)),
     ),
   ];
 
@@ -337,7 +397,12 @@ function Retake() {
               </p>
             </CardContent>
             <CardFooter className="justify-center">
-              <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
+              <Link
+                to="/retake/$categoria/$nr"
+                params={{ categoria: categoriaKey, nr: "0" }}
+                preload={false}
+                viewTransition
+              >
                 <Button>
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {t("test.startRetest")}
@@ -351,11 +416,15 @@ function Retake() {
 
     // All wrong answers cleared → confetti!
     return (
-      <FinishedCard correct={categoryCorrect.length} total={totalAnswered} categoria={categoria} />
+      <FinishedCard
+        correct={categoryCorrect.length}
+        total={totalAnswered}
+        categoria={categoriaKey}
+      />
     );
   }
 
-  return <TestView chosen={chosen} categoria={categoria} next={next} isRetake={true} />;
+  return <TestView chosen={chosen} categoria={categoriaKey} next={next} isRetake={true} />;
 }
 
 // ─── Router ───────────────────────────────────────────────────────────────────
@@ -397,6 +466,9 @@ const router = createRouter({
   routeTree,
   defaultPreload: false,
   defaultViewTransition: true,
+  defaultErrorComponent: DefaultErrorBoundary,
+  defaultNotFoundComponent: NotFoundPage,
+  scrollRestoration: true,
 });
 
 declare module "@tanstack/react-router" {
