@@ -16,18 +16,18 @@ const languages = ["en", "ro", "de", "hu"];
 
 async function loadTranslations() {
   const resources: Resources = {};
-  
+
   const translations = await Promise.all(
     languages.map(async (lang) => {
       const module = await import(`./locales/${lang}/tr.json`);
       return { lang, translation: module.default };
-    })
+    }),
   );
-  
+
   translations.forEach(({ lang, translation }) => {
     resources[lang] = { translation };
   });
-  
+
   return resources;
 }
 

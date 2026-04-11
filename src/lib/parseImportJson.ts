@@ -3,7 +3,9 @@ import type { Category, Catego } from "../hooks/useCatego";
 
 export type ParseJsonResult = {
   questions: Partial<QuestionRow>[];
+  language?: string;
   suggestedCategoryKey?: string;
+  suggestedSetName?: string;
 };
 
 function mapCategoryToQuestionRow(cat: Category): Partial<QuestionRow> {
@@ -34,6 +36,64 @@ function mapCategoryToQuestionRow(cat: Category): Partial<QuestionRow> {
 }
 
 export function parseImportJson(input: unknown): ParseJsonResult {
+  if (
+    typeof input === "object" &&
+    input !== null &&
+    "language" in input &&
+    "questions" in input &&
+    Array.isArray((input as { questions: unknown[] }).questions)
+  ) {
+    const manifest = input as {
+      language?: string;
+      category?: string | string[];
+      setName?: string;
+      questions: Array<{
+        q?: string;
+        v?: string;
+        ans?: Record<string, string>;
+        image?: string;
+        i?: string | number;
+      }>;
+    };
+
+    if (!["ro", "en", "de", "hu"].includes(manifest.language ?? "")) {
+      throw new Error("JSON import must specify a valid language: ro, en, de, or hu");
+    }
+
+    const suggestedCategoryKey = Array.isArray(manifest.category)
+      ? manifest.category[0]
+      : manifest.category;
+
+    const questions = manifest.questions.map((item) => {
+      const row: Partial<QuestionRow> = {
+        q: item.q,
+        v: item.v,
+      };
+
+      if (item.ans) {
+        for (const [key, value] of Object.entries(item.ans)) {
+          if (value) {
+            (row as Record<string, string>)[key] = value;
+          }
+        }
+      }
+
+      const imageRef = item.image ?? item.i;
+      if (typeof imageRef === "string") {
+        row.imageExt = imageRef.split(".").pop()?.toLowerCase() ?? "jpg";
+      }
+
+      return row;
+    });
+
+    return {
+      questions,
+      language: manifest.language,
+      suggestedCategoryKey,
+      suggestedSetName: manifest.setName,
+    };
+  }
+
   if (Array.isArray(input)) {
     // Direct Category[] array
     const questions = (input as Category[]).map(mapCategoryToQuestionRow);

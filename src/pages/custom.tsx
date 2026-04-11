@@ -1,37 +1,77 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Upload, Pencil, Download, Trash2 } from "lucide-react";
+import { Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { Button } from "../components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
 } from "../components/ui/card";
 import { CustomImport } from "../components/custom-import";
-import { getSetsForLang, getQuestionsForSet, deleteSet } from "../lib/customStore";
+import { langs } from "../i18n";
+import {
+  addCustomStoreChangeListener,
+  deleteSet,
+  getAllSets,
+  getQuestionsForSet,
+} from "../lib/customStore";
 import { exportSetAsZip } from "../lib/customZip";
 import type { SetRow } from "../lib/customStore";
+import { normalizeLegacyCustomCategoryKey } from "../lib/customCategory";
 
+type LangKey = keyof typeof langs;
 type SetItem = { id: string } & SetRow;
+
+const ALL_LANGS = Object.keys(langs) as LangKey[];
 
 export function CustomPage() {
   const { t, i18n } = useTranslation();
   const [sets, setSets] = useState<SetItem[]>([]);
+  const [selectedLang, setSelectedLang] = useState<LangKey>((i18n.language as LangKey) || "ro");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
 
-  const lang = i18n.language;
-  const refresh = () => setSets(getSetsForLang(lang));
+  const refresh = () => {
+    setSets(getAllSets());
+  };
 
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
+  }, []);
+
+  useEffect(() => addCustomStoreChangeListener(refresh), []);
+
+  useEffect(() => {
+    const current = i18n.language as LangKey;
+    if (ALL_LANGS.includes(current)) {
+      setSelectedLang(current);
+    }
+  }, [i18n.language]);
+
+  const counts = useMemo(() => {
+    return ALL_LANGS.reduce<Record<LangKey, number>>(
+      (acc, lang) => {
+        acc[lang] = sets.filter((set) => set.lang === lang).length;
+        return acc;
+      },
+      { ro: 0, en: 0, de: 0, hu: 0 },
+    );
+  }, [sets]);
+
+  const filteredSets = useMemo(
+    () => sets.filter((set) => set.lang === selectedLang).sort((a, b) => b.createdAt - a.createdAt),
+    [selectedLang, sets],
+  );
+
+  const totalQuestions = filteredSets.reduce(
+    (sum, set) => sum + getQuestionsForSet(set.id).length,
+    0,
+  );
 
   const handleDelete = (setId: string) => {
     deleteSet(setId);
@@ -51,110 +91,210 @@ export function CustomPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t("custom.title")}</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
-            <Upload className="h-4 w-4 mr-1" />
-            Import
-          </Button>
-          <Link to={"/custom/new" as any}>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-1" />
-              {t("custom.newSet")}
-            </Button>
-          </Link>
+    <div className="mx-auto flex max-w-5xl flex-col gap-8">
+      <section className="overflow-hidden border border-border bg-card text-card-foreground">
+        <div className="border-b border-white/10 bg-black px-5 py-6 text-white md:px-8 md:py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <p className="editorial-kicker text-white/60">{t("custom.kicker")}</p>
+              <h1 className="max-w-2xl text-[26px] font-medium leading-[1.15] text-white md:text-[32px]">
+                {t("custom.title")}
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-white/70">{t("custom.description")}</p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                {t("custom.importAction")}
+              </Button>
+              <Link to={"/custom/new" as any} preload={false}>
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("custom.newSet")}
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {sets.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">{t("custom.noSets")}</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {sets.map((set) => {
-            const questionCount = getQuestionsForSet(set.id).length;
+        <div className="grid gap-3 px-5 py-5 md:grid-cols-4 md:px-8 md:py-6">
+          {ALL_LANGS.map((lang) => {
+            const active = selectedLang === lang;
             return (
-              <Card key={set.id}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-lg">{set.name}</CardTitle>
-                    <div className="flex gap-1 shrink-0">
-                      <span className="text-xs border rounded px-1.5 py-0.5 uppercase font-mono">
-                        {set.lang}
-                      </span>
-                      <span className="text-xs border rounded px-1.5 py-0.5 font-mono">
-                        {set.categoryKey}
-                      </span>
-                    </div>
+              <button
+                key={lang}
+                type="button"
+                onClick={() => setSelectedLang(lang)}
+                className={`border px-4 py-4 text-left transition-colors ${
+                  active
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-foreground hover:bg-accent dark:hover:border-white/60 dark:hover:bg-white/5"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="editorial-kicker">{(lang as string).toUpperCase()}</p>
+                    <p className="mt-2 text-[18px] font-medium text-foreground">{langs[lang]}</p>
                   </div>
-                  <CardDescription>
-                    {questionCount} {questionCount === 1 ? "question" : "questions"}
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter className="gap-2">
-                  <Link {...({ to: "/custom/$setId", params: { setId: set.id } } as any)}>
-                    <Button variant="outline" size="sm">
-                      <Pencil className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" onClick={() => exportSetAsZip(set.id)}>
-                    <Download className="h-4 w-4 mr-1" />
-                    {t("custom.exportZip")}
-                  </Button>
-
-                  <Dialog.Root
-                    open={deleteTarget === set.id}
-                    onOpenChange={(open) => {
-                      if (!open) setDeleteTarget(null);
-                    }}
-                  >
-                    <Dialog.Trigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setDeleteTarget(set.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        {t("custom.deleteSet")}
-                      </Button>
-                    </Dialog.Trigger>
-
-                    <Dialog.Portal>
-                      <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150" />
-                      <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:duration-150">
-                        <Card className="w-full max-w-sm">
-                          <CardHeader>
-                            <Dialog.Title className="font-semibold text-lg">
-                              {t("custom.deleteConfirmTitle")}
-                            </Dialog.Title>
-                            <Dialog.Description className="text-sm text-muted-foreground">
-                              {t("custom.deleteConfirmText")}
-                            </Dialog.Description>
-                          </CardHeader>
-                          <CardFooter className="justify-end gap-2">
-                            <Dialog.Close asChild>
-                              <Button variant="outline">{t("common.cancel")}</Button>
-                            </Dialog.Close>
-                            <Button variant="destructive" onClick={() => handleDelete(set.id)}>
-                              {t("custom.deleteSet")}
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      </Dialog.Content>
-                    </Dialog.Portal>
-                  </Dialog.Root>
-                </CardFooter>
-              </Card>
+                  <span className="border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    {counts[lang]}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {t("custom.setsAvailable", { count: counts[lang] })}
+                </p>
+              </button>
             );
           })}
         </div>
-      )}
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="editorial-kicker">{t("custom.activeLanguageLabel")}</p>
+            <h2 className="mt-2 text-[24px] font-medium leading-[1.15] text-foreground">
+              {langs[selectedLang]}
+            </h2>
+          </div>
+
+          <div className="flex gap-6 text-sm text-muted-foreground">
+            <div>
+              <span className="editorial-kicker block">{t("custom.setCountLabel")}</span>
+              <span className="mt-1 block text-[18px] font-medium text-foreground">
+                {filteredSets.length}
+              </span>
+            </div>
+            <div>
+              <span className="editorial-kicker block">{t("custom.questionCountLabel")}</span>
+              <span className="mt-1 block text-[18px] font-medium text-foreground">
+                {totalQuestions}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {filteredSets.length === 0 ? (
+          <Card>
+            <CardContent className="space-y-4 py-12 text-center">
+              <p className="editorial-kicker">{(selectedLang as string).toUpperCase()}</p>
+              <p className="text-sm text-muted-foreground">{t("custom.noSetsForLanguage")}</p>
+              <div className="flex justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {t("custom.importAction")}
+                </Button>
+                <Link to={"/custom/new" as any} preload={false}>
+                  <Button size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t("custom.newSet")}
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredSets.map((set) => {
+              const questionCount = getQuestionsForSet(set.id).length;
+              const createdAt = new Intl.DateTimeFormat(i18n.language, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              }).format(new Date(set.createdAt));
+
+              return (
+                <Card key={set.id} className="overflow-hidden">
+                  <CardHeader className="border-b border-border pb-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="space-y-2">
+                        <CardTitle className="text-[24px] font-medium leading-[1.15]">
+                          {set.name}
+                        </CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground">
+                          {t("custom.setMeta", {
+                            count: questionCount,
+                            createdAt,
+                          })}
+                        </CardDescription>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <span className="border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                          {set.lang}
+                        </span>
+                        <span className="border border-border px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                          {normalizeLegacyCustomCategoryKey(set.categoryKey, set.name)}
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardFooter className="flex flex-col items-start gap-3 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap gap-2">
+                      <Link {...({ to: "/custom/$setId", params: { setId: set.id } } as any)}>
+                        <Button variant="outline" size="sm">
+                          <Pencil className="mr-2 h-4 w-4" />
+                          {t("custom.editSet")}
+                        </Button>
+                      </Link>
+                      <Button variant="outline" size="sm" onClick={() => exportSetAsZip(set.id)}>
+                        <Download className="mr-2 h-4 w-4" />
+                        {t("custom.exportZip")}
+                      </Button>
+                    </div>
+
+                    <Dialog.Root
+                      open={deleteTarget === set.id}
+                      onOpenChange={(open) => {
+                        if (!open) setDeleteTarget(null);
+                      }}
+                    >
+                      <Dialog.Trigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => setDeleteTarget(set.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t("custom.deleteSet")}
+                        </Button>
+                      </Dialog.Trigger>
+
+                      <Dialog.Portal>
+                        <Dialog.Overlay className="editorial-dialog-overlay" />
+                        <Dialog.Content className="editorial-dialog-content">
+                          <Card className="w-full max-w-sm">
+                            <CardHeader>
+                              <p className="editorial-kicker">{t("custom.deleteLabel")}</p>
+                              <Dialog.Title className="text-[24px] font-medium leading-[1.2]">
+                                {t("custom.deleteConfirmTitle")}
+                              </Dialog.Title>
+                              <Dialog.Description className="text-[13px] text-muted-foreground">
+                                {t("custom.deleteConfirmText")}
+                              </Dialog.Description>
+                            </CardHeader>
+                            <CardFooter className="justify-end gap-2">
+                              <Dialog.Close asChild>
+                                <Button variant="outline">{t("common.cancel")}</Button>
+                              </Dialog.Close>
+                              <Button variant="destructive" onClick={() => handleDelete(set.id)}>
+                                {t("custom.deleteSet")}
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </Dialog.Content>
+                      </Dialog.Portal>
+                    </Dialog.Root>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

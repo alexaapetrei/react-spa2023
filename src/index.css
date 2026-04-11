@@ -2,56 +2,137 @@
 @import "tw-animate-css";
 
 @theme {
-  --color-background: oklch(0.985 0 0);
-  --color-foreground: oklch(0.145 0 0);
-  --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.145 0 0);
-  --color-popover: oklch(1 0 0);
-  --color-popover-foreground: oklch(0.145 0 0);
-  --color-primary: oklch(0.205 0 0);
-  --color-primary-foreground: oklch(0.985 0 0);
-  --color-secondary: oklch(0.97 0 0);
-  --color-secondary-foreground: oklch(0.205 0 0);
-  --color-muted: oklch(0.97 0 0);
-  --color-muted-foreground: oklch(0.556 0 0);
-  --color-accent: oklch(0.97 0 0);
-  --color-accent-foreground: oklch(0.205 0 0);
-  --color-destructive: oklch(0.577 0.245 27.325);
-  --color-destructive-foreground: oklch(0.985 0 0);
-  --color-border: oklch(0.922 0 0);
-  --color-input: oklch(0.922 0 0);
-  --color-ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
+  --color-background: #ffffff;
+  --color-foreground: #181818;
+  --color-card: #ffffff;
+  --color-card-foreground: #181818;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #181818;
+  --color-primary: #da291c;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #303030;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #f3f3f3;
+  --color-muted-foreground: #666666;
+  --color-accent: #f3f3f3;
+  --color-accent-foreground: #181818;
+  --color-destructive: #f13a2c;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #d2d2d2;
+  --color-input: #cccccc;
+  --color-ring: #da291c;
+  --radius: 0.125rem;
 }
 
 .dark {
-  --color-background: oklch(0.145 0 0);
-  --color-foreground: oklch(0.985 0 0);
-  --color-card: oklch(0.205 0 0);
-  --color-card-foreground: oklch(0.985 0 0);
-  --color-popover: oklch(0.205 0 0);
-  --color-popover-foreground: oklch(0.985 0 0);
-  --color-primary: oklch(0.92 0 0);
-  --color-primary-foreground: oklch(0.205 0 0);
-  --color-secondary: oklch(0.269 0 0);
-  --color-secondary-foreground: oklch(0.985 0 0);
-  --color-muted: oklch(0.269 0 0);
-  --color-muted-foreground: oklch(0.708 0 0);
-  --color-accent: oklch(0.269 0 0);
-  --color-accent-foreground: oklch(0.985 0 0);
-  --color-destructive: oklch(0.577 0.245 27.325);
-  --color-destructive-foreground: oklch(0.985 0 0);
-  --color-border: oklch(0.269 0 0);
-  --color-input: oklch(0.269 0 0);
-  --color-ring: oklch(0.429 0 0);
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-card: #303030;
+  --color-card-foreground: #ffffff;
+  --color-popover: #303030;
+  --color-popover-foreground: #ffffff;
+  --color-primary: #da291c;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #ffffff;
+  --color-secondary-foreground: #181818;
+  --color-muted: #1a1a1a;
+  --color-muted-foreground: #8f8f8f;
+  --color-accent: #111111;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #f13a2c;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #4a4a4a;
+  --color-input: #666666;
+  --color-ring: #da291c;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 0.01em;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
+  label {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    letter-spacing: 0.01em;
+  }
+  input,
+  select,
+  textarea {
+    @apply outline-none;
+  }
+}
+
+@layer components {
+  .editorial-kicker {
+    @apply text-[11px] font-normal uppercase tracking-[0.24em] text-muted-foreground;
+  }
+
+  .editorial-label {
+    @apply text-[12px] font-medium uppercase tracking-[0.16em] text-muted-foreground;
+  }
+
+  .editorial-panel {
+    @apply border border-border bg-card text-card-foreground rounded-sm;
+  }
+
+  .editorial-input {
+    @apply w-full rounded-sm border border-input bg-transparent px-3 py-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/20;
+  }
+
+  .editorial-file {
+    @apply block w-full rounded-sm border border-dashed border-input bg-transparent px-3 py-2.5 text-sm text-muted-foreground file:mr-3 file:rounded-sm file:border file:border-foreground file:bg-background file:px-3 file:py-2 file:text-[12px] file:font-medium file:uppercase file:tracking-[0.16em] file:text-foreground;
+  }
+
+  .editorial-select {
+    @apply w-full appearance-none rounded-sm border border-input bg-background px-3 py-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/20 dark:bg-card;
+  }
+
+  .editorial-dialog-overlay {
+    @apply fixed inset-0 z-50 bg-black/70 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150;
+  }
+
+  .editorial-dialog-content {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:duration-150;
+  }
+
+  .editorial-sidebar-shell {
+    @apply overflow-hidden rounded-sm border border-border bg-card text-card-foreground;
+  }
+
+  .editorial-sidebar-item {
+    @apply flex items-start gap-3 rounded-sm border border-transparent px-3 py-3 text-left text-sm text-foreground transition-colors;
+  }
+
+  .editorial-sidebar-item-active {
+    @apply border-primary bg-primary/10 text-foreground;
+  }
+
+  .editorial-sidebar-item-idle {
+    @apply hover:border-border hover:bg-accent;
   }
 }
 
@@ -120,11 +201,11 @@ html::view-transition-new(action-bar) {
 
 /* Custom styles */
 .category-card {
-  @apply p-5 rounded-lg bg-gradient-to-br from-card to-muted hover:from-accent hover:to-accent/50 transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-primary shadow-md hover:shadow-lg;
+  @apply rounded-sm border border-border bg-card p-5 text-card-foreground transition-colors duration-200 cursor-pointer hover:border-foreground hover:bg-accent;
 }
 
 .test-answer {
-  @apply p-4 rounded-lg border-2 mb-3 cursor-pointer transition-all duration-200 flex items-center gap-4;
+  @apply mb-3 flex cursor-pointer items-center gap-4 rounded-sm border px-4 py-4 transition-colors duration-200;
 }
 
 .test-answer:hover {
@@ -144,7 +225,7 @@ html::view-transition-new(action-bar) {
 }
 
 .progress-bar {
-  @apply h-2 rounded-full bg-secondary overflow-hidden;
+  @apply h-2 overflow-hidden rounded-sm bg-muted;
 }
 
 .progress-bar-fill {

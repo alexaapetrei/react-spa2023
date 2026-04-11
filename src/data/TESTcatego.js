@@ -29,10 +29,7 @@ for (const [lang, catego] of options.entries()) {
     const categories = catego[key];
     for (const category of categories) {
       if (!conformsToSchema(category)) {
-        console.log(
-          `Non-conforming object in language "${lang}" for key "${key}":`,
-          category
-        );
+        console.log(`Non-conforming object in language "${lang}" for key "${key}":`, category);
       }
     }
   }

@@ -51,18 +51,24 @@ export function Social() {
     },
   ];
 
-  const visibleLinks = socialLinks.filter(link => link.show);
+  const visibleLinks = socialLinks.filter((link) => link.show);
 
   return (
     <div className="mt-auto pt-4">
-      <p className="text-sm text-muted-foreground text-center mb-4">{t("common.disourage")}</p>
+      <p className="mb-4 text-center text-sm text-white/60">{t("common.disourage")}</p>
       <div className="grid grid-cols-2 gap-2">
         {visibleLinks.map((link, index) => (
           <a
             key={index}
-            className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
+            className="flex cursor-pointer items-center gap-2 border border-white/10 p-3 text-[12px] uppercase tracking-[0.12em] text-white transition-colors hover:border-white/30 hover:bg-white/5"
             href={link.href}
-            target={!link.href.startsWith('sms:') && !link.href.startsWith('whatsapp:') && !link.href.startsWith('mailto:') ? "_blank" : undefined}
+            target={
+              !link.href.startsWith("sms:") &&
+              !link.href.startsWith("whatsapp:") &&
+              !link.href.startsWith("mailto:")
+                ? "_blank"
+                : undefined
+            }
             rel="noopener noreferrer"
           >
             <link.icon className="h-4 w-4" />

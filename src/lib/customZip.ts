@@ -1,20 +1,22 @@
 import JSZip from "jszip";
-import { getQuestionsForSet, getSetsForLang, saveSet, saveQuestion } from "./customStore";
-import type { Category } from "../hooks/useCatego";
+import {
+  getQuestionsForSet,
+  getSetsForLang,
+  getSetById,
+  saveSet,
+  saveQuestion,
+} from "./customStore";
+import { normalizeLegacyCustomCategoryKey } from "./customCategory";
 
 export async function exportSetAsZip(setId: string): Promise<void> {
-  const setsTable = (await import("./customStore")).store.getTable("sets") as Record<
-    string,
-    Record<string, unknown>
-  >;
-  const setRow = setsTable[setId];
-  const setName = (setRow?.name as string) ?? "custom-set";
+  const setRow = getSetById(setId);
+  const setName = setRow?.name ?? "set";
 
   const questions = getQuestionsForSet(setId);
 
   const zip = new JSZip();
 
-  const categoriesForJson: Category[] = questions.map((row) => {
+  const exportQuestions = questions.map((row, idx) => {
     const ans: Record<string, string> = {};
     const answerKeys = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"] as const;
     for (const key of answerKeys) {
@@ -22,15 +24,33 @@ export async function exportSetAsZip(setId: string): Promise<void> {
         ans[key] = row[key] as string;
       }
     }
+
+    const image = row.imageData ? `${idx + 1}.${row.imageExt ?? "jpg"}` : undefined;
+
     return {
-      id: row.id,
+      id: String(idx + 1),
       q: row.q,
       ans,
       v: row.v,
+      ...(image ? { image } : {}),
     };
   });
 
-  zip.file("questions.json", JSON.stringify(categoriesForJson, null, 2));
+  zip.file(
+    "questions.json",
+    JSON.stringify(
+      {
+        setName,
+        language: setRow?.lang ?? "ro",
+        category: setRow?.categoryKey
+          ? normalizeLegacyCustomCategoryKey(setRow.categoryKey, setName)
+          : "set",
+        questions: exportQuestions,
+      },
+      null,
+      2,
+    ),
+  );
 
   const imagesFolder = zip.folder("images")!;
 
@@ -56,6 +76,24 @@ export async function exportSetAsZip(setId: string): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
+export async function previewZip(file: File): Promise<{
+  count: number;
+  setName?: string;
+  questions: Array<{ q: string; v: string; [key: string]: unknown }>;
+}> {
+  const zip = await JSZip.loadAsync(file);
+  const questionsFile = zip.file("questions.json");
+  if (!questionsFile) throw new Error("questions.json not found in ZIP");
+
+  const questionsJson = await questionsFile.async("string");
+  const manifest = JSON.parse(questionsJson);
+  return {
+    count: Array.isArray(manifest.questions) ? manifest.questions.length : 0,
+    setName: manifest.setName,
+    questions: manifest.questions || [],
+  };
+}
+
 export async function importFromZip(
   file: File,
   lang: string,
@@ -68,25 +106,58 @@ export async function importFromZip(
   if (!questionsFile) throw new Error("questions.json not found in ZIP");
 
   const questionsJson = await questionsFile.async("string");
-  const categories: Category[] = JSON.parse(questionsJson);
+  const manifest = JSON.parse(questionsJson) as {
+    setName?: string;
+    language?: string;
+    category?: string | string[];
+    questions?: Array<{
+      q: string;
+      v: string;
+      ans?: Record<string, string>;
+      image?: string;
+    }>;
+  };
 
-  const setId = saveSet({ name: setName, lang, categoryKey });
+  if (!Array.isArray(manifest.questions)) {
+    throw new Error("questions.json must contain a questions array");
+  }
+
+  const resolvedLang = ["ro", "en", "de", "hu"].includes(manifest.language ?? "")
+    ? (manifest.language as string)
+    : lang;
+  const resolvedSetName = setName || manifest.setName;
+  const resolvedCategory = normalizeLegacyCustomCategoryKey(
+    Array.isArray(manifest.category)
+      ? manifest.category[0] || categoryKey
+      : manifest.category || categoryKey,
+    resolvedSetName,
+  );
+
+  const setId = saveSet({
+    name: resolvedSetName,
+    lang: resolvedLang,
+    categoryKey: resolvedCategory,
+  });
 
   let count = 0;
-  for (let idx = 0; idx < categories.length; idx++) {
-    const cat = categories[idx];
+  for (let idx = 0; idx < manifest.questions.length; idx++) {
+    const cat = manifest.questions[idx];
     const row: Parameters<typeof saveQuestion>[1] = {
       q: cat.q,
       v: cat.v,
-      ...cat.ans,
     };
+    if (cat.ans) {
+      for (const [key, val] of Object.entries(cat.ans)) {
+        if (val) {
+          (row as Record<string, string>)[key] = val;
+        }
+      }
+    }
 
-    // Try to find image for this question (1-based index)
-    const n = idx + 1;
-    const exts = ["jpg", "jpeg", "png", "webp", "gif"];
-    for (const ext of exts) {
-      const imgFile = zip.file(`images/${n}.${ext}`);
+    if (cat.image) {
+      const imgFile = zip.file(`images/${cat.image}`);
       if (imgFile) {
+        const ext = cat.image.split(".").pop()?.toLowerCase() ?? "jpg";
         const base64 = await imgFile.async("base64");
         const mime =
           ext === "jpg" || ext === "jpeg"
@@ -98,7 +169,6 @@ export async function importFromZip(
                 : "image/gif";
         row.imageData = `data:${mime};base64,${base64}`;
         row.imageExt = ext;
-        break;
       }
     }
 

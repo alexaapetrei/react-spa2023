@@ -1,5 +1,11 @@
 import { createRouter, createRootRoute, createRoute, Outlet, Link } from "@tanstack/react-router";
-import { initCustomStore, mergeCustomQuestions } from "./lib/customStore";
+import {
+  getSetsForLang,
+  initCustomStore,
+  mergeCustomQuestions,
+  getSetById,
+  getQuestionsForSet,
+} from "./lib/customStore";
 import { CustomPage } from "./pages/custom";
 import { CustomNewPage } from "./pages/custom-new";
 import { CustomEditPage } from "./pages/custom-edit";
@@ -21,6 +27,7 @@ import { NavLayout } from "./components/nav";
 import { TestView } from "./components/test-view";
 import { FinishedCard } from "./components/finished-card";
 import useLocalState from "./hooks/useLocalState";
+import { isQuestionIdForCategory } from "./lib/categoryProgress";
 
 const validLangs: LangKeys[] = ["ro", "en", "de", "hu"];
 
@@ -72,17 +79,27 @@ const indexRoute = createRoute({
 
 function Index() {
   const { t } = useTranslation();
-  const { questions } = indexRoute.useLoaderData() as LoaderData;
+  const { questions, language } = indexRoute.useLoaderData() as LoaderData;
   const [state] = useLocalState();
+  const customCategoryNames = new Map(
+    getSetsForLang(language).map((set) => [set.categoryKey, set.name]),
+  );
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl mx-auto">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="mx-auto flex max-w-4xl flex-col gap-8">
+      <section className="space-y-3 border-b border-border pb-6 text-center">
+        <p className="editorial-kicker">Driving Theory</p>
+        <h1 className="text-[26px] font-medium leading-[1.15] tracking-[0.01em] text-foreground">
+          Editorial study cards for every category.
+        </h1>
+      </section>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Object.keys(questions).map((c) => {
-          // Use startsWith (not includes) so "b" doesn't match custom IDs containing the letter b.
+          // Match the category key plus delimiter so "b" doesn't match custom IDs like "bus-...".
           // Deduplicate so multiple retake attempts for the same question count once.
-          const uniqueCorecte = new Set(state.corecte.filter((q) => q.startsWith(c)));
-          const uniqueGresite = new Set(state.gresite.filter((q) => q.startsWith(c)));
+          const uniqueCorecte = new Set(state.corecte.filter((q) => isQuestionIdForCategory(q, c)));
+          const uniqueGresite = new Set(state.gresite.filter((q) => isQuestionIdForCategory(q, c)));
           const corecteCount = uniqueCorecte.size;
           const gresiteCount = uniqueGresite.size;
           // Resume index = unique questions touched, capped at category length so we never
@@ -93,20 +110,22 @@ function Index() {
             maxQuestions,
           );
           const percentage = maxQuestions > 0 ? (totalCount / maxQuestions) * 100 : 0;
+          const categoryName = customCategoryNames.get(c) ?? c;
 
           return (
             <Link key={c} to={`/categoria/${c}/${totalCount}` as any} preload={false}>
-              <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-center text-2xl font-black">
-                    {c.toUpperCase()}
+              <Card className="cursor-pointer transition-colors hover:border-foreground hover:bg-accent dark:hover:border-white dark:hover:bg-white/5">
+                <CardHeader className="border-b border-border pb-4">
+                  <p className="editorial-kicker text-center">{t("custom.category")}</p>
+                  <CardTitle className="text-center text-[24px] font-medium">
+                    {categoryName.toUpperCase()}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-3 pt-6">
                   <Progress value={percentage} />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span className="text-green-600">{corecteCount}</span>
-                    <span className="text-red-600">{gresiteCount}</span>
+                  <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    <span className="text-green-600">{corecteCount} ✓</span>
+                    <span className="text-red-600">{gresiteCount} ✗</span>
                   </div>
                 </CardContent>
               </Card>
@@ -115,9 +134,12 @@ function Index() {
         })}
       </div>
 
-      <Card>
+      <Card className="bg-black text-white dark:bg-[#101010]">
         <CardHeader className="text-center">
-          <CardTitle className="text-lg sm:text-3xl font-bold">{t("common.encourage")}</CardTitle>
+          <p className="editorial-kicker text-white/60">{t("common.editorsNote")}</p>
+          <CardTitle className="text-lg sm:text-[26px] font-medium text-white">
+            {t("common.encourage")}
+          </CardTitle>
         </CardHeader>
       </Card>
     </div>
@@ -169,10 +191,10 @@ function Categoria() {
   if (last) {
     // Deduplicate: a question answered multiple times should only count once
     const wrongForCategory = [
-      ...new Set((state.gresite as string[]).filter((q) => q.startsWith(categoria))),
+      ...new Set((state.gresite as string[]).filter((q) => isQuestionIdForCategory(q, categoria))),
     ];
     const correctForCategory = [
-      ...new Set((state.corecte as string[]).filter((q) => q.startsWith(categoria))),
+      ...new Set((state.corecte as string[]).filter((q) => isQuestionIdForCategory(q, categoria))),
     ];
     const totalAnswered = wrongForCategory.length + correctForCategory.length;
     const score =
@@ -181,7 +203,7 @@ function Categoria() {
     if (wrongForCategory.length > 0) {
       return (
         <div className="animate-in fade-in zoom-in duration-300">
-          <Card className="max-w-md mx-auto">
+          <Card className="mx-auto max-w-md">
             <CardHeader>
               <CardTitle>{t("test.done")}</CardTitle>
               <CardDescription>{t("test.congrats")}</CardDescription>
@@ -263,10 +285,14 @@ function Retake() {
 
   // Deduplicate: a question answered multiple times only counts once
   const categoryWrong = [
-    ...new Set((savedState.gresite as string[]).filter((q) => q.startsWith(categoria))),
+    ...new Set(
+      (savedState.gresite as string[]).filter((q) => isQuestionIdForCategory(q, categoria)),
+    ),
   ];
   const categoryCorrect = [
-    ...new Set((savedState.corecte as string[]).filter((q) => q.startsWith(categoria))),
+    ...new Set(
+      (savedState.corecte as string[]).filter((q) => isQuestionIdForCategory(q, categoria)),
+    ),
   ];
 
   const wrongIds = new Set(categoryWrong);
@@ -287,7 +313,7 @@ function Retake() {
       // Still wrong answers remaining → offer another retake pass
       return (
         <div className="animate-in fade-in zoom-in duration-300">
-          <Card className="max-w-md mx-auto">
+          <Card className="mx-auto max-w-md">
             <CardHeader>
               <CardTitle>{t("test.done")}</CardTitle>
               <CardDescription>{t("test.congrats")}</CardDescription>
@@ -349,6 +375,12 @@ const customNewRoute = createRoute({
 export const customEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/custom/$setId",
+  loader: async ({ params }) => {
+    await initCustomStore();
+    const setMeta = getSetById(params.setId);
+    const questions = getQuestionsForSet(params.setId);
+    return { setMeta, questions };
+  },
   component: CustomEditPage,
 });
 

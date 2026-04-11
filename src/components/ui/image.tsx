@@ -13,16 +13,14 @@ export default function Image({ src, alt, className, containerClassName }: Image
 
   return (
     <div className={cn("relative", containerClassName)}>
-      {!loaded && (
-        <div className="absolute inset-0 bg-muted rounded-lg animate-pulse" />
-      )}
+      {!loaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
       <img
         src={src}
         alt={alt}
         className={cn(
-          "max-w-full rounded-lg shadow-md transition-opacity duration-300",
+          "max-w-full transition-opacity duration-300",
           loaded ? "opacity-100" : "opacity-0",
-          className
+          className,
         )}
         onLoad={() => setLoaded(true)}
       />

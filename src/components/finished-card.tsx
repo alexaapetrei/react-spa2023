@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { RotateCcw } from "lucide-react";
+import { isQuestionIdForCategory } from "../lib/categoryProgress";
 
 type FinishedCardProps = { correct?: number; total?: number; categoria?: string };
 
@@ -30,14 +31,14 @@ export function FinishedCard({ correct, total, categoria }: FinishedCardProps) {
         angle: 60,
         spread: 55,
         origin: { x: 0 },
-        colors: ["#22c55e", "#3b82f6", "#eab308", "#ef4444", "#a855f7"],
+        colors: ["#da291c", "#b01e0a", "#fff200", "#f6e500", "#303030"],
       });
       confetti({
         particleCount: 3,
         angle: 120,
         spread: 55,
         origin: { x: 1 },
-        colors: ["#22c55e", "#3b82f6", "#eab308", "#ef4444", "#a855f7"],
+        colors: ["#da291c", "#b01e0a", "#fff200", "#f6e500", "#303030"],
       });
       if (Date.now() < end) requestAnimationFrame(frame);
     };
@@ -50,8 +51,8 @@ export function FinishedCard({ correct, total, categoria }: FinishedCardProps) {
     const raw = localStorage.getItem("state");
     if (raw) {
       const state = JSON.parse(raw);
-      state.corecte = state.corecte.filter((q: string) => !q.startsWith(categoria));
-      state.gresite = state.gresite.filter((q: string) => !q.startsWith(categoria));
+      state.corecte = state.corecte.filter((q: string) => !isQuestionIdForCategory(q, categoria));
+      state.gresite = state.gresite.filter((q: string) => !isQuestionIdForCategory(q, categoria));
       localStorage.setItem("state", JSON.stringify(state));
     }
     navigate({ to: `/categoria/${categoria}/0` as any, viewTransition: true });
@@ -59,10 +60,11 @@ export function FinishedCard({ correct, total, categoria }: FinishedCardProps) {
 
   return (
     <div className="animate-in fade-in zoom-in duration-500">
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>{t("test.finished")}</CardTitle>
-          <CardDescription>{t("test.congrats")}</CardDescription>
+      <Card className="mx-auto max-w-md overflow-hidden">
+        <CardHeader className="border-b border-white/10 bg-black text-white">
+          <p className="editorial-kicker text-white/60">{t("common.sessionComplete")}</p>
+          <CardTitle className="text-white">{t("test.finished")}</CardTitle>
+          <CardDescription className="text-white/70">{t("test.congrats")}</CardDescription>
         </CardHeader>
         {showStats && (
           <CardContent className="space-y-3">
@@ -73,7 +75,7 @@ export function FinishedCard({ correct, total, categoria }: FinishedCardProps) {
               <span className="text-muted-foreground">✗ 0 {t("common.wrong")}</span>
             </div>
             <Progress value={score} className="h-2" />
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-center text-xs text-muted-foreground">
               {t("test.scoreOf", { score, answered: total, total })}
             </p>
           </CardContent>
@@ -91,22 +93,29 @@ export function FinishedCard({ correct, total, categoria }: FinishedCardProps) {
                 </Button>
               </Dialog.Trigger>
               <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150" />
-                <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:duration-150">
-                  <Card className="w-full max-w-sm">
+                <Dialog.Overlay className="editorial-dialog-overlay" />
+                <Dialog.Content className="editorial-dialog-content px-4">
+                  <Card className="w-full max-w-md">
                     <CardHeader>
-                      <Dialog.Title className="font-semibold text-lg">
+                      <p className="editorial-kicker">{t("common.categoryReset")}</p>
+                      <Dialog.Title className="text-[24px] font-medium leading-[1.2]">
                         {t("common.resetCategoryConfirmTitle")}
                       </Dialog.Title>
-                      <Dialog.Description className="text-sm text-muted-foreground">
+                      <Dialog.Description className="text-[13px] text-muted-foreground">
                         {t("common.resetCategoryConfirmText")}
                       </Dialog.Description>
                     </CardHeader>
-                    <CardFooter className="justify-end gap-2">
+                    <CardFooter className="flex-col-reverse items-stretch gap-2 sm:flex-row sm:justify-end">
                       <Dialog.Close asChild>
-                        <Button variant="outline">{t("common.cancel")}</Button>
+                        <Button variant="outline" className="w-full sm:w-auto">
+                          {t("common.cancel")}
+                        </Button>
                       </Dialog.Close>
-                      <Button variant="destructive" onClick={handleResetCategory}>
+                      <Button
+                        variant="destructive"
+                        className="w-full sm:w-auto"
+                        onClick={handleResetCategory}
+                      >
                         <RotateCcw className="h-4 w-4 mr-2" />
                         {t("common.resetCategory")}
                       </Button>

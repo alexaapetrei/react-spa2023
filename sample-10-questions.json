@@ -1,0 +1,107 @@
+{
+  "setName": "Set demo 10 intrebari",
+  "language": "ro",
+  "category": "a",
+  "questions": [
+    {
+      "id": "1",
+      "q": "Ce trebuie sa faceti inainte de a schimba banda de circulatie?",
+      "ans": {
+        "a": "Sa semnalizati si sa va asigurati",
+        "b": "Sa claxonati lung",
+        "c": "Sa accelerati fara verificare"
+      },
+      "v": "a"
+    },
+    {
+      "id": "2",
+      "q": "Ce culoare are semaforul care permite trecerea?",
+      "ans": {
+        "a": "Rosu",
+        "b": "Verde",
+        "c": "Galben intermitent"
+      },
+      "v": "b"
+    },
+    {
+      "id": "3",
+      "q": "Cand este obligatorie purtarea centurii de siguranta?",
+      "ans": {
+        "a": "Doar in afara localitatii",
+        "b": "Numai pe timp de noapte",
+        "c": "In toate situatiile prevazute de lege"
+      },
+      "v": "c"
+    },
+    {
+      "id": "4",
+      "q": "Cum procedati daca observati un pieton angajat regulamentar pe trecere?",
+      "ans": {
+        "a": "Reduceti viteza si acordati prioritate",
+        "b": "Il ocoliti rapid",
+        "c": "Va continuati deplasarea daca aveti drum liber"
+      },
+      "v": "a"
+    },
+    {
+      "id": "5",
+      "q": "Care este primul lucru pe care il faceti dupa urcarea la volan?",
+      "ans": {
+        "a": "Porniti imediat motorul",
+        "b": "Reglati pozitia si oglinzile",
+        "c": "Aprindeti luminile de ceata"
+      },
+      "v": "b"
+    },
+    {
+      "id": "6",
+      "q": "Ce inseamna o linie continua trasata intre sensurile de mers?",
+      "ans": {
+        "a": "Depasirea este recomandata",
+        "b": "Trecerea peste marcaj este interzisa, cu exceptiile legale",
+        "c": "Se poate circula pe ambele sensuri fara restrictii"
+      },
+      "v": "b"
+    },
+    {
+      "id": "7",
+      "q": "Cand trebuie folosita semnalizarea?",
+      "ans": {
+        "a": "Numai la iesirea din parcare",
+        "b": "Doar pe autostrada",
+        "c": "La orice schimbare a directiei sau benzii de mers"
+      },
+      "v": "c"
+    },
+    {
+      "id": "8",
+      "q": "Cum trebuie sa adaptati viteza pe timp de ploaie?",
+      "ans": {
+        "a": "O mariti pentru a traversa rapid zona",
+        "b": "O reduceti si mariti distanta fata de vehiculul din fata",
+        "c": "O pastrati identica fata de carosabilul uscat"
+      },
+      "v": "b"
+    },
+    {
+      "id": "9",
+      "q": "Ce trebuie sa faceti la aparitia semnalelor speciale ale unei ambulante aflata in misiune?",
+      "ans": {
+        "a": "Ii acordati prioritate si eliberati calea",
+        "b": "O urmati indeaproape pentru a avansa mai repede",
+        "c": "Va mentineti banda si viteza"
+      },
+      "v": "a"
+    },
+    {
+      "id": "10",
+      "q": "Ce document trebuie sa aveti asupra dumneavoastra atunci cand conduceti un autovehicul?",
+      "ans": {
+        "a": "Doar cartea de identitate",
+        "b": "Permisul de conducere si celelalte documente cerute de lege",
+        "c": "Numai asigurarea in copie"
+      },
+      "v": "b"
+    }
+  ]
+}

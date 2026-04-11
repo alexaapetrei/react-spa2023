@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "./ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "./ui/card";
+import { Card, CardHeader, CardFooter } from "./ui/card";
 import { RotateCcw, Trash2 } from "lucide-react";
 
 export function HomeActions() {
@@ -73,16 +73,17 @@ export function HomeActions() {
 
         <Dialog.Portal>
           {/* Overlay — fades in/out */}
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150" />
+          <Dialog.Overlay className="editorial-dialog-overlay" />
 
           {/* Content — scales + fades in, scales + fades out */}
-          <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:duration-150">
+          <Dialog.Content className="editorial-dialog-content">
             <Card className="w-full max-w-sm">
               <CardHeader>
-                <Dialog.Title className="font-semibold text-lg">
+                <p className="editorial-kicker">{t("common.maintenance")}</p>
+                <Dialog.Title className="text-[24px] font-medium leading-[1.2]">
                   {t("common.resetConfirmTitle")}
                 </Dialog.Title>
-                <Dialog.Description className="text-sm text-muted-foreground">
+                <Dialog.Description className="text-[13px] text-muted-foreground">
                   {t("common.resetConfirmText")}
                 </Dialog.Description>
               </CardHeader>
