@@ -19,23 +19,13 @@ export type QuestionRow = {
   lang: string;
   categoryKey: string;
   q: string;
-  a?: string;
-  b?: string;
-  c?: string;
-  d?: string;
-  e?: string;
-  f?: string;
-  g?: string;
-  h?: string;
-  i?: string;
-  j?: string;
   v: string;
+  isCustom: boolean;
+  canonicalId?: string;
+  canonicalImageId?: number;
   imageData?: string;
   imageExt?: string;
-  canonicalId?: string; // id from the original json, e.g. "a-1066"
-  canonicalImageId?: number; // "i" from the original json
-  isCustom: boolean;
-};
+} & Partial<Record<(typeof ANSWER_KEYS)[number], string>>;
 
 export const store = createStore().setTablesSchema({
   sets: {
@@ -116,25 +106,22 @@ function baseSetUrlKey(lang: string, categoryKey: string, isCanonical: boolean):
 
 function ensureUniqueSetUrlKey(baseKey: string, setId: string): string {
   const table = store.getTable("sets") as Record<string, Record<string, unknown>>;
-  const used = new Set<string>();
-  for (const [id, row] of Object.entries(table)) {
-    if (id === setId) continue;
-    if (typeof row.urlKey === "string" && row.urlKey.length > 0) {
-      used.add(row.urlKey);
-    }
-  }
+  const used = new Set(
+    Object.entries(table)
+      .filter(([id]) => id !== setId)
+      .map(([, row]) => row.urlKey)
+      .filter((key): key is string => typeof key === "string" && key.length > 0),
+  );
 
   if (!used.has(baseKey)) return baseKey;
 
   const suffix = toKebabSegment(setId).slice(-8) || crypto.randomUUID().slice(0, 8);
-  const candidate = `${baseKey}-${suffix}`;
-  if (!used.has(candidate)) return candidate;
-
+  let candidate = `${baseKey}-${suffix}`;
   let counter = 2;
-  while (used.has(`${candidate}-${counter}`)) {
-    counter += 1;
+  while (used.has(candidate)) {
+    candidate = `${baseKey}-${suffix}-${counter++}`;
   }
-  return `${candidate}-${counter}`;
+  return candidate;
 }
 
 function createSetUrlKey(
@@ -197,39 +184,17 @@ function createCanonicalQuestionId(categoryKey: string): string {
 
 function upsertCanonicalSetRow(lang: SupportedLang, categoryKey: string): string {
   const setId = canonicalSetId(lang, categoryKey);
-  const existing = store.getRow("sets", setId) as Record<string, unknown> | undefined;
   const nextUrlKey = createSetUrlKey(setId, lang, categoryKey, true);
+  const nextName = categoryKey.toUpperCase();
 
-  if (!existing) {
-    store.setRow("sets", setId, {
-      name: categoryKey.toUpperCase(),
-      lang,
-      categoryKey,
-      createdAt: 0,
-      isCanonical: true,
-      urlKey: nextUrlKey,
-    } as Record<string, string | number | boolean>);
-    return setId;
-  }
-
-  if (existing.lang !== lang) {
-    store.setCell("sets", setId, "lang", lang);
-  }
-  if (existing.categoryKey !== categoryKey) {
-    store.setCell("sets", setId, "categoryKey", categoryKey);
-  }
-  if (existing.name !== categoryKey.toUpperCase()) {
-    store.setCell("sets", setId, "name", categoryKey.toUpperCase());
-  }
-  if (existing.isCanonical !== true) {
-    store.setCell("sets", setId, "isCanonical", true);
-  }
-  if (existing.createdAt !== 0) {
-    store.setCell("sets", setId, "createdAt", 0);
-  }
-  if (existing.urlKey !== nextUrlKey) {
-    store.setCell("sets", setId, "urlKey", nextUrlKey);
-  }
+  store.setPartialRow("sets", setId, {
+    name: nextName,
+    lang,
+    categoryKey,
+    createdAt: 0,
+    isCanonical: true,
+    urlKey: nextUrlKey,
+  });
 
   return setId;
 }
@@ -422,133 +387,68 @@ export async function reinitializeCanonicalFromJson(): Promise<void> {
   });
 
   await ensureAllCanonicalLoaded();
-  notifyCustomStoreChange();
+  notifyChange();
 }
 
-export type ChangeAction =
-  | "addSet"
-  | "updateSet"
-  | "deleteSet"
-  | "addQuestion"
-  | "updateQuestion"
-  | "deleteQuestion";
+const listeners = new Set<() => void>();
 
-const customStoreChangeListeners = new Set<(action?: ChangeAction) => void>();
-
-function notifyCustomStoreChange(action?: ChangeAction): void {
-  customStoreChangeListeners.forEach((listener) => listener(action));
+function notifyChange(): void {
+  listeners.forEach((l) => l());
 }
 
-function recordCustomStoreChange<T>(
-  label: string,
-  action: () => T,
-  changeAction?: ChangeAction,
-): T {
+function withCheckpoint<T>(label: string, action: () => T): T {
   const result = store.transaction(action);
   checkpoints.addCheckpoint(label);
-  notifyCustomStoreChange(changeAction);
+  notifyChange();
   return result;
 }
 
-export function addCustomStoreChangeListener(
-  listener: (action?: ChangeAction) => void,
-): () => void {
-  customStoreChangeListeners.add(listener);
+export function addCustomStoreChangeListener(listener: () => void): () => void {
+  listeners.add(listener);
   return () => {
-    customStoreChangeListeners.delete(listener);
+    listeners.delete(listener);
   };
-}
-
-export function addCustomUndoListener(listener: () => void): () => void {
-  const listenerId = checkpoints.addCheckpointIdsListener(listener);
-  return () => {
-    checkpoints.delListener(listenerId);
-  };
-}
-
-export function getCustomUndoState(): { canUndo: boolean; label: string } {
-  const [backwardIds, currentId] = checkpoints.getCheckpointIds();
-  return {
-    canUndo: backwardIds.length > 0 && currentId !== undefined,
-    label: currentId ? (checkpoints.getCheckpoint(currentId) ?? "") : "",
-  };
-}
-
-export function getCustomRedoState(): { canRedo: boolean; label: string } {
-  const [, , forwardIds] = checkpoints.getCheckpointIds();
-  const redoId = forwardIds[0];
-  return {
-    canRedo: redoId !== undefined,
-    label: redoId ? (checkpoints.getCheckpoint(redoId) ?? "") : "",
-  };
-}
-
-export function undoCustomStoreChange(): boolean {
-  if (!getCustomUndoState().canUndo) return false;
-  checkpoints.goBackward();
-  notifyCustomStoreChange();
-  return true;
-}
-
-export function redoCustomStoreChange(): boolean {
-  if (!getCustomRedoState().canRedo) return false;
-  checkpoints.goForward();
-  notifyCustomStoreChange();
-  return true;
 }
 
 export function getSetsForLang(lang: string): Array<{ id: string } & SetRow> {
   const normalizedLang = normalizeLang(lang);
-  const table = store.getTable("sets") as Record<string, Record<string, unknown>>;
-  return Object.entries(table)
+  return Object.entries(store.getTable("sets") as Record<string, SetRow>)
     .filter(([, row]) => normalizeLang(row.lang) === normalizedLang)
-    .map(([id, row]) => ({ id, ...(row as unknown as SetRow) }));
-}
-
-export function getAllSets(): Array<{ id: string } & SetRow> {
-  const table = store.getTable("sets") as Record<string, Record<string, unknown>>;
-  return Object.entries(table).map(([id, row]) => ({ id, ...(row as unknown as SetRow) }));
+    .map(([id, row]) => ({ id, ...row }));
 }
 
 export function getCategoryKeysForLang(lang: string): string[] {
   const normalizedLang = normalizeLang(lang);
-  const table = store.getTable("sets") as Record<string, Record<string, unknown>>;
-  return Object.values(table)
+  return Object.values(store.getTable("sets") as Record<string, SetRow>)
     .filter((row) => normalizeLang(row.lang) === normalizedLang)
-    .map((row) => row.categoryKey as string);
+    .map((row) => row.categoryKey);
 }
 
 export function getSetById(setId: string): ({ id: string } & SetRow) | null {
-  const row = store.getRow("sets", setId) as Record<string, unknown> | undefined;
-  if (!row) return null;
-  return { id: setId, ...(row as unknown as SetRow) };
+  const row = store.getRow("sets", setId) as SetRow | undefined;
+  return row ? { id: setId, ...row } : null;
 }
 
 export function getQuestionsForSet(setId: string): Array<{ id: string } & QuestionRow> {
-  const table = store.getTable("questions") as Record<string, Record<string, unknown>>;
-  return Object.entries(table)
+  return Object.entries(store.getTable("questions") as Record<string, QuestionRow>)
     .filter(([, row]) => row.setId === setId)
-    .map(([id, row]) => ({ id, ...(row as unknown as QuestionRow) }));
+    .map(([id, row]) => ({ id, ...row }));
 }
 
 export function saveSet(data: Omit<SetRow, "createdAt">): string {
   const id = crypto.randomUUID();
   const normalizedLang = normalizeLang(data.lang);
   const urlKey = createSetUrlKey(id, normalizedLang, data.categoryKey, false);
-  return recordCustomStoreChange(
-    "create set",
-    () => {
-      store.setRow("sets", id, {
-        ...data,
-        lang: normalizedLang,
-        createdAt: Date.now(),
-        isCanonical: false,
-        urlKey,
-      } as Record<string, string | number | boolean>);
-      return id;
-    },
-    "addSet",
-  );
+  return withCheckpoint("create set", () => {
+    store.setRow("sets", id, {
+      ...data,
+      lang: normalizedLang,
+      createdAt: Date.now(),
+      isCanonical: false,
+      urlKey,
+    } as Record<string, string | number | boolean>);
+    return id;
+  });
 }
 
 export function updateSet(setId: string, data: Omit<SetRow, "createdAt">): void {
@@ -558,28 +458,24 @@ export function updateSet(setId: string, data: Omit<SetRow, "createdAt">): void 
   const normalizedLang = normalizeLang(data.lang);
   const urlKey = createSetUrlKey(setId, normalizedLang, data.categoryKey, false);
 
-  recordCustomStoreChange(
-    "update set",
-    () => {
-      store.setRow("sets", setId, {
-        ...data,
-        lang: normalizedLang,
-        createdAt: existing.createdAt,
-        isCanonical: false,
-        urlKey,
-      } as Record<string, string | number | boolean>);
+  withCheckpoint("update set", () => {
+    store.setRow("sets", setId, {
+      ...data,
+      lang: normalizedLang,
+      createdAt: existing.createdAt,
+      isCanonical: false,
+      urlKey,
+    } as Record<string, string | number | boolean>);
 
-      if (data.categoryKey !== existing.categoryKey) {
-        for (const questionId of indexes.getSliceRowIds("bySet", setId)) {
-          store.setPartialRow("questions", questionId, {
-            categoryKey: data.categoryKey,
-            lang: normalizedLang,
-          });
-        }
+    if (data.categoryKey !== existing.categoryKey) {
+      for (const questionId of indexes.getSliceRowIds("bySet", setId)) {
+        store.setPartialRow("questions", questionId, {
+          categoryKey: data.categoryKey,
+          lang: normalizedLang,
+        });
       }
-    },
-    "updateSet",
-  );
+    }
+  });
 }
 
 export function getSetIdByUrlKey(setKey: string): string | null {
@@ -648,43 +544,31 @@ export function saveQuestion(
   }
   if (data.imageData) row.imageData = data.imageData;
   if (data.imageExt) row.imageExt = data.imageExt;
-  return recordCustomStoreChange(
-    existingId ? "update question" : "create question",
-    () => {
-      store.setRow("questions", id, row);
-      return id;
-    },
-    existingId ? "updateQuestion" : "addQuestion",
-  );
+  return withCheckpoint(existingId ? "update question" : "create question", () => {
+    store.setRow("questions", id, row);
+    return id;
+  });
 }
 
 export function deleteQuestion(questionId: string): void {
-  recordCustomStoreChange(
-    "delete question",
-    () => {
-      store.delRow("questions", questionId);
-    },
-    "deleteQuestion",
-  );
+  withCheckpoint("delete question", () => {
+    store.delRow("questions", questionId);
+  });
 }
 
 export function deleteSet(setId: string): void {
   const set = getSetById(setId);
   if (set?.isCanonical) return;
 
-  recordCustomStoreChange(
-    "delete set",
-    () => {
-      store.delRow("sets", setId);
-      const table = store.getTable("questions") as Record<string, Record<string, unknown>>;
-      for (const [qId, row] of Object.entries(table)) {
-        if (row.setId === setId) {
-          store.delRow("questions", qId);
-        }
+  withCheckpoint("delete set", () => {
+    store.delRow("sets", setId);
+    const table = store.getTable("questions") as Record<string, Record<string, unknown>>;
+    for (const [qId, row] of Object.entries(table)) {
+      if (row.setId === setId) {
+        store.delRow("questions", qId);
       }
-    },
-    "deleteSet",
-  );
+    }
+  });
 }
 
 export function getAllQuestionsForLang(lang: string): Catego {
