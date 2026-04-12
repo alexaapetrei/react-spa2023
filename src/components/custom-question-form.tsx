@@ -60,6 +60,19 @@ function rowToAnswers(row: {
   }));
 }
 
+function getCanonicalImagePath(
+  row: Pick<QuestionRow, "categoryKey" | "canonicalImageId" | "imageExt">,
+) {
+  const imageId = row.canonicalImageId;
+  if (!Number.isInteger(imageId) || imageId <= 0) {
+    return "";
+  }
+
+  const rawExt = typeof row.imageExt === "string" ? row.imageExt.trim() : "";
+  const imageExt = (rawExt ? rawExt : "jpg").replace(/^\./, "").toLowerCase();
+  return `/img/${row.categoryKey}/${imageId}.${imageExt}`;
+}
+
 export function CustomQuestionForm({
   setId: initialSetId,
   editQuestionId,
@@ -74,10 +87,12 @@ export function CustomQuestionForm({
     : null;
   const isNewSet = !initialSetId;
   const isEditing = !!editQuestion;
+  const isEditingCanonical = !!(editQuestion && !editQuestion.isCustom);
 
   const [savedCount, setSavedCount] = React.useState(0);
   const [currentSetId, setCurrentSetId] = React.useState<string | undefined>(initialSetId);
   const [validationError, setValidationError] = React.useState<string | null>(null);
+  const [hideCanonicalImage, setHideCanonicalImage] = React.useState(false);
 
   const imageInputRef = React.useRef<HTMLInputElement>(null);
   const questionRef = React.useRef<HTMLTextAreaElement>(null);
@@ -107,6 +122,7 @@ export function CustomQuestionForm({
   React.useEffect(() => {
     if (!editQuestion) {
       resetQuestionFields();
+      setHideCanonicalImage(false);
       return;
     }
 
@@ -123,6 +139,7 @@ export function CustomQuestionForm({
     );
     form.setFieldValue("imageData", editQuestion.imageData ?? "");
     form.setFieldValue("imageExt", editQuestion.imageExt ?? "");
+    setHideCanonicalImage(false);
     if (imageInputRef.current) imageInputRef.current.value = "";
   }, [editQuestion?.id]);
 
@@ -174,11 +191,13 @@ export function CustomQuestionForm({
     form.setFieldValue("imageData", preview);
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
     form.setFieldValue("imageExt", ext);
+    setHideCanonicalImage(false);
   };
 
   const handleRemoveImage = () => {
     form.setFieldValue("imageData", "");
     form.setFieldValue("imageExt", "");
+    setHideCanonicalImage(true);
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
@@ -256,6 +275,10 @@ export function CustomQuestionForm({
     if (imageData) {
       rowData.imageData = imageData;
       rowData.imageExt = imageExt;
+    }
+
+    if (isEditingCanonical && hideCanonicalImage) {
+      rowData.canonicalImageId = 0;
     }
 
     saveQuestion(setIdToUse, rowData, isEditing ? editQuestion!.id : undefined);
@@ -361,45 +384,53 @@ export function CustomQuestionForm({
           <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
             <Field
               name="imageData"
-              children={(field) => (
-                <div className="space-y-3">
-                  <input
-                    ref={imageInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                  {field.state.value ? (
-                    <>
-                      <div className="flex min-h-56 items-center justify-center border border-border bg-muted/30 p-2">
-                        <img
-                          src={field.state.value}
-                          alt="Preview"
-                          className="max-h-72 w-full object-contain"
-                        />
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleRemoveImage}
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              children={(field) => {
+                const canonicalImage =
+                  !hideCanonicalImage && isEditingCanonical && editQuestion
+                    ? getCanonicalImagePath(editQuestion)
+                    : "";
+                const previewSrc = field.state.value || canonicalImage;
+
+                return (
+                  <div className="space-y-3">
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                    {previewSrc ? (
+                      <>
+                        <div className="flex min-h-56 items-center justify-center border border-border bg-muted/30 p-2">
+                          <img
+                            src={previewSrc}
+                            alt="Preview"
+                            className="max-h-72 w-full object-contain"
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveImage}
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t("custom.removeImage")}
+                        </Button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => imageInputRef.current?.click()}
+                        className="flex min-h-56 w-full items-center justify-center border border-dashed border-border bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:border-foreground hover:text-foreground focus:ring-2 focus:ring-primary/30 focus:outline-none"
                       >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t("custom.removeImage")}
-                      </Button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => imageInputRef.current?.click()}
-                      className="flex min-h-56 w-full items-center justify-center border border-dashed border-border bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:border-foreground hover:text-foreground focus:ring-2 focus:ring-primary/30 focus:outline-none"
-                    >
-                      {t("custom.addImage")}
-                    </button>
-                  )}
-                </div>
-              )}
+                        {t("custom.addImage")}
+                      </button>
+                    )}
+                  </div>
+                );
+              }}
             />
 
             <div className="min-w-0 space-y-4">

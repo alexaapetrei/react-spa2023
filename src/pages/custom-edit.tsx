@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useLoaderData, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowLeft, Pencil, Plus } from "lucide-react";
@@ -66,11 +66,13 @@ function DeleteDialogContent({
 
 export function CustomEditPage() {
   const { t, i18n } = useTranslation();
-  const { setId } = useParams({ from: "/custom/$setId" });
+  const navigate = useNavigate();
+  const { setId } = useLoaderData({ from: "/custom/$setKey" });
   const setMetaRow = useRow("sets", setId, store);
   const setMeta = setMetaRow
     ? ({ id: setId, ...(setMetaRow as unknown as SetRow) } as const)
     : null;
+  const isCanonicalSet = setMeta?.isCanonical === true || setId.startsWith("canonical:");
   const { undo, redo } = useCustomUndo();
 
   const questionIds = useSliceRowIds("bySet", setId, indexes);
@@ -86,6 +88,7 @@ export function CustomEditPage() {
   const lang = i18n.language || "ro";
 
   const saveName = () => {
+    if (isCanonicalSet) return;
     setError(null);
     if (!editName.trim()) return setError(t("custom.setNameRequired"));
     if (!setMeta) return;
@@ -97,6 +100,7 @@ export function CustomEditPage() {
 
     updateSet(setId, { name: editName.trim(), lang, categoryKey: key });
     setIsEditingName(false);
+    navigate({ to: "/custom/$setKey", params: { setKey: setId }, replace: true });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -217,14 +221,16 @@ export function CustomEditPage() {
                 ) : (
                   <div className="flex items-center gap-2">
                     <h2 className="truncate text-[18px] font-medium text-white">{setMeta.name}</h2>
-                    <button
-                      type="button"
-                      className="rounded p-1 text-white/50 opacity-60 transition-all hover:opacity-100 hover:bg-white/10"
-                      onClick={() => setIsEditingName(true)}
-                      title={t("custom.editSet")}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
+                    {!isCanonicalSet ? (
+                      <button
+                        type="button"
+                        className="rounded p-1 text-white/50 opacity-60 transition-all hover:opacity-100 hover:bg-white/10"
+                        onClick={() => setIsEditingName(true)}
+                        title={t("custom.editSet")}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    ) : null}
                   </div>
                 ))}
             </div>

@@ -7,6 +7,7 @@
     "dev": "vp dev",
     "build": "vp build",
     "lint": "vp lint src",
+    "lint:type-aware": "vp lint src --type-aware",
     "preview": "vp preview --host",
     "prepare": "vp config"
   },

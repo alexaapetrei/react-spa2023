@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import Image from "./ui/image";
 import { ArrowRight, Check, X, Circle } from "lucide-react";
-import type { Category } from "../hooks/useCatego";
+import type { Category } from "../types/catego";
 
 type TestViewProps = {
   chosen: Category;

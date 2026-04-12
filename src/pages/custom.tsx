@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "@tanstack/react-router";
-import { Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
-import { RowProps, SliceView, useRow, useRowIds, useSliceRowIds } from "tinybase/ui-react";
+import { Download, Pencil, Plus, RotateCcw, Trash2, Upload } from "lucide-react";
+import { RowProps, useRow, useSliceRowIds } from "tinybase/ui-react";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -14,7 +14,14 @@ import {
 } from "../components/ui/card";
 import { CustomImport } from "../components/custom-import";
 import { langs } from "../i18n";
-import { deleteSet, indexes, store, type SetRow } from "../lib/customStore";
+import {
+  deleteSet,
+  indexes,
+  store,
+  type SetRow,
+  exportAllQuestionsAsJson,
+  reinitializeCanonicalFromJson,
+} from "../lib/customStore";
 import { exportSetAsZip } from "../lib/customZip";
 import { normalizeLegacyCustomCategoryKey } from "../lib/customCategory";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -26,12 +33,14 @@ const ALL_LANGS = Object.keys(langs) as LangKey[];
 function SetCard({ rowId, onDelete }: { rowId: RowProps["rowId"]; onDelete: () => void }) {
   const { t, i18n } = useTranslation();
   const row = useRow("sets", rowId, store);
-  const questionCount = useSliceRowIds("bySet", rowId, indexes).length;
+  const questionIds = useSliceRowIds("bySet", rowId, indexes);
+  const questionCount = questionIds.length;
   const [isDeleting, setIsDeleting] = useState(false);
 
   if (!row) return null;
 
   const set = row as unknown as SetRow;
+  const isCanonical = set.isCanonical === true || String(rowId).startsWith("canonical:");
 
   const createdAt = new Intl.DateTimeFormat(i18n.language, {
     year: "numeric",
@@ -66,7 +75,11 @@ function SetCard({ rowId, onDelete }: { rowId: RowProps["rowId"]; onDelete: () =
 
       <CardFooter className="flex flex-col items-start gap-3 pt-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
-          <Link to="/custom/$setId" params={{ setId: rowId }} preload={false}>
+          <Link
+            to="/custom/$setKey"
+            params={{ setKey: set.urlKey ?? String(rowId) }}
+            preload={false}
+          >
             <Button variant="outline" size="sm">
               <Pencil className="mr-2 h-4 w-4" />
               {t("custom.editSet")}
@@ -78,49 +91,51 @@ function SetCard({ rowId, onDelete }: { rowId: RowProps["rowId"]; onDelete: () =
           </Button>
         </div>
 
-        <Dialog.Root open={isDeleting} onOpenChange={setIsDeleting}>
-          <Dialog.Trigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {t("custom.deleteSet")}
-            </Button>
-          </Dialog.Trigger>
+        {!isCanonical ? (
+          <Dialog.Root open={isDeleting} onOpenChange={setIsDeleting}>
+            <Dialog.Trigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("custom.deleteSet")}
+              </Button>
+            </Dialog.Trigger>
 
-          <Dialog.Portal>
-            <Dialog.Overlay className="editorial-dialog-overlay" />
-            <Dialog.Content className="editorial-dialog-content">
-              <Card className="w-full max-w-sm">
-                <CardHeader>
-                  <p className="editorial-kicker">{t("custom.deleteLabel")}</p>
-                  <Dialog.Title className="text-[24px] font-medium leading-[1.2]">
-                    {t("custom.deleteConfirmTitle")}
-                  </Dialog.Title>
-                  <Dialog.Description className="text-[13px] text-muted-foreground">
-                    {t("custom.deleteConfirmText")}
-                  </Dialog.Description>
-                </CardHeader>
-                <CardFooter className="justify-end gap-2">
-                  <Dialog.Close asChild>
-                    <Button variant="outline">{t("common.cancel")}</Button>
-                  </Dialog.Close>
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      onDelete();
-                      setIsDeleting(false);
-                    }}
-                  >
-                    {t("custom.deleteSet")}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
+            <Dialog.Portal>
+              <Dialog.Overlay className="editorial-dialog-overlay" />
+              <Dialog.Content className="editorial-dialog-content">
+                <Card className="w-full max-w-sm">
+                  <CardHeader>
+                    <p className="editorial-kicker">{t("custom.deleteLabel")}</p>
+                    <Dialog.Title className="text-[24px] font-medium leading-[1.2]">
+                      {t("custom.deleteConfirmTitle")}
+                    </Dialog.Title>
+                    <Dialog.Description className="text-[13px] text-muted-foreground">
+                      {t("custom.deleteConfirmText")}
+                    </Dialog.Description>
+                  </CardHeader>
+                  <CardFooter className="justify-end gap-2">
+                    <Dialog.Close asChild>
+                      <Button variant="outline">{t("common.cancel")}</Button>
+                    </Dialog.Close>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        onDelete();
+                        setIsDeleting(false);
+                      }}
+                    >
+                      {t("custom.deleteSet")}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+        ) : null}
       </CardFooter>
     </Card>
   );
@@ -128,37 +143,38 @@ function SetCard({ rowId, onDelete }: { rowId: RowProps["rowId"]; onDelete: () =
 
 export function CustomPage() {
   const { t, i18n } = useTranslation();
-  const [selectedLang, setSelectedLang] = useState<LangKey>((i18n.language as LangKey) || "ro");
+  const [selectedLang, setSelectedLang] = useState<LangKey>(
+    ALL_LANGS.includes(i18n.language as LangKey) ? (i18n.language as LangKey) : "ro",
+  );
   const [showImport, setShowImport] = useState(false);
-  const allQuestionIds = useRowIds("questions", store);
+  const [isReinitializing, setIsReinitializing] = useState(false);
   const filteredSetIds = useSliceRowIds("setsByLang", selectedLang, indexes);
-  const roCount = useSliceRowIds("setsByLang", "ro", indexes).length;
-  const enCount = useSliceRowIds("setsByLang", "en", indexes).length;
-  const deCount = useSliceRowIds("setsByLang", "de", indexes).length;
-  const huCount = useSliceRowIds("setsByLang", "hu", indexes).length;
 
-  useEffect(() => {
-    const current = i18n.language as LangKey;
-    if (ALL_LANGS.includes(current)) {
-      setSelectedLang(current);
-    }
-  }, [i18n.language]);
-
-  const totalQuestions = useMemo(
-    () =>
-      filteredSetIds.reduce((sum, setId) => sum + indexes.getSliceRowIds("bySet", setId).length, 0),
-    [filteredSetIds, allQuestionIds],
+  const totalQuestions = filteredSetIds.reduce(
+    (sum, setId) => sum + indexes.getSliceRowIds("bySet", setId).length,
+    0,
   );
 
   const counts: Record<LangKey, number> = {
-    ro: roCount,
-    en: enCount,
-    de: deCount,
-    hu: huCount,
+    ro: useSliceRowIds("setsByLang", "ro", indexes).length,
+    en: useSliceRowIds("setsByLang", "en", indexes).length,
+    de: useSliceRowIds("setsByLang", "de", indexes).length,
+    hu: useSliceRowIds("setsByLang", "hu", indexes).length,
   };
 
   const handleDelete = (setId: string) => {
     deleteSet(setId);
+  };
+
+  const handleReinitializeCanonical = async () => {
+    setIsReinitializing(true);
+    try {
+      await reinitializeCanonicalFromJson();
+    } catch (error) {
+      console.error("Failed to reinitialize canonical data", error);
+    } finally {
+      setIsReinitializing(false);
+    }
   };
 
   if (showImport) {
@@ -179,6 +195,29 @@ export function CustomPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void exportAllQuestionsAsJson(selectedLang).catch((error) => {
+                    console.error("Failed to export all questions as JSON", error);
+                  });
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {t("custom.exportAllJson", { lang: selectedLang.toUpperCase() })}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void handleReinitializeCanonical();
+                }}
+                disabled={isReinitializing}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {isReinitializing ? t("custom.reinitializing") : t("custom.reinitializeCanonical")}
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
                 <Upload className="mr-2 h-4 w-4" />
                 {t("custom.importAction")}
@@ -271,13 +310,9 @@ export function CustomPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            <SliceView
-              indexId="setsByLang"
-              sliceId={selectedLang}
-              indexes={indexes}
-              rowComponent={SetCard}
-              getRowComponentProps={(rowId) => ({ onDelete: () => handleDelete(rowId) })}
-            />
+            {filteredSetIds.map((setId) => (
+              <SetCard key={setId} rowId={setId} onDelete={() => handleDelete(setId)} />
+            ))}
           </div>
         )}
       </section>

@@ -1,5 +1,5 @@
 import type { QuestionRow } from "./customStore";
-import type { Category, Catego } from "../hooks/useCatego";
+import type { Category, Catego } from "../types/catego";
 
 export type ParseJsonResult = {
   questions: Partial<QuestionRow>[];

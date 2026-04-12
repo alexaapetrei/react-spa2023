@@ -1,10 +1,25 @@
 {
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "rules": {
     "no-console": "warn",
     "no-debugger": "warn",
+    "no-nested-ternary": "warn",
     "no-unused-vars": "warn",
     "no-unreachable": "warn",
     "suspicious.noExplicitAny": "warn"
   },
-  "exclude": ["node_modules", "public", "dist", "*.min.js"]
+  "exclude": [
+    "node_modules",
+    "**/node_modules/**",
+    "public",
+    "public/**",
+    "**/public/**",
+    "dist",
+    "dist/**",
+    "**/dist/**",
+    "dev-dist",
+    "dev-dist/**",
+    "**/dev-dist/**",
+    "*.min.js"
+  ]
 }

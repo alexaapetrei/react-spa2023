@@ -4,14 +4,15 @@ import {
   createRoute,
   Outlet,
   Link,
+  notFound,
   useNavigate,
 } from "@tanstack/react-router";
 import {
   getSetsForLang,
   initCustomStore,
-  mergeCustomQuestions,
-  getSetById,
-  getQuestionsForSet,
+  getSetIdByUrlKey,
+  ensureCanonicalLoaded,
+  getAllQuestionsForLang,
 } from "./lib/customStore";
 import { CustomPage } from "./pages/custom";
 import { CustomNewPage } from "./pages/custom-new";
@@ -28,8 +29,7 @@ import {
 } from "./components/ui/card";
 import { Progress } from "./components/ui/progress";
 import { RotateCcw } from "lucide-react";
-import type { LangKeys } from "./hooks/useCatego";
-import roData from "./data/catego.json";
+import type { Catego, LangKeys } from "./types/catego";
 import { NavLayout } from "./components/nav";
 import { TestView } from "./components/test-view";
 import { FinishedCard } from "./components/finished-card";
@@ -55,14 +55,13 @@ const loadQuestions = async (lang: string): Promise<Catego> => {
     storeInitialized = true;
   }
   const validLang = validLangs.includes(lang as LangKeys) ? (lang as LangKeys) : "ro";
-  let data: Catego;
-  if (validLang === "ro") {
-    data = roData as Catego;
-  } else {
-    const module = await import(`./data/catego-${validLang}.json`);
-    data = module.default as Catego;
-  }
-  return mergeCustomQuestions(validLang, data);
+  await ensureCanonicalLoaded(validLang);
+  return getAllQuestionsForLang(validLang);
+};
+
+const loadCustomStore = async () => {
+  await initCustomStore();
+  return null;
 };
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
@@ -432,23 +431,27 @@ function Retake() {
 const customRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/custom",
+  loader: loadCustomStore,
   component: CustomPage,
 });
 
 const customNewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/custom/new",
+  loader: loadCustomStore,
   component: CustomNewPage,
 });
 
 export const customEditRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/custom/$setId",
+  path: "/custom/$setKey",
   loader: async ({ params }) => {
     await initCustomStore();
-    const setMeta = getSetById(params.setId);
-    const questions = getQuestionsForSet(params.setId);
-    return { setMeta, questions };
+    const setId = getSetIdByUrlKey(params.setKey);
+    if (!setId) {
+      throw notFound();
+    }
+    return { setId };
   },
   component: CustomEditPage,
 });
