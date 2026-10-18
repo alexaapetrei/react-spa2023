@@ -22,6 +22,7 @@
     "share": "share",
     "menu": "Menu",
     "cancel": "Cancel",
+    "ok": "OK",
     "resetConfirmTitle": "Reset progress?",
     "resetConfirmText": "This will clear saved progress and cached assets (service worker). This cannot be undone.",
     "language": "Language",
@@ -43,7 +44,72 @@
     "next": "Next",
     "scoreOf": "{{score}}% — {{answered}} of {{total}} answered",
     "yourProgress": "Your progress",
+    "retakeNotReadyTitle": "Finish the set first",
+    "retakeNotReadyText": "Reviewing incorrect answers is available after you finish every question in this category.",
     "answered": "answered",
-    "left": "left"
+    "left": "left",
+    "setQuestionPosition": "Set {{category}} · Question {{question}} of {{total}}"
+  },
+  "errorPage": {
+    "heading": "Something went wrong",
+    "title": "Try again, or head back home."
+  },
+  "nav": {
+    "tagline": "Driving theory tests",
+    "navigation": "Navigation",
+    "categories": "Categories",
+    "personal": "Personal",
+    "myQuestions": "My questions",
+    "settings": "Settings",
+    "settingsDescription": "Language, appearance, offline and reset",
+    "theme": "Appearance",
+    "light": "Light",
+    "dark": "Dark",
+    "retake": "Retake",
+    "toggleProgress": "Show progress",
+    "overall": "Overall",
+    "accuracy": "Accuracy",
+    "of": "of",
+    "sets": "Sets",
+    "share": "Share"
+  },
+  "custom": {
+    "title": "My questions",
+    "subtitle": "Write your own questions and file them under an existing category.",
+    "newQuestion": "New question",
+    "newQuestionHint": "Write the question and options in the languages you need, then mark the correct answer.",
+    "category": "Category",
+    "question": "Question",
+    "questionPlaceholder": "Write the question prompt…",
+    "answers": "Answer options",
+    "answersHint": "Add 2 to 20 options. Each option can contain text, an image, or both. Fill in translations in each language and mark correct answers.",
+    "answerPlaceholder": "Option {{letter}}",
+    "markCorrect": "Mark as correct answer",
+    "save": "Save question",
+    "saved": "Question saved",
+    "savedTitle": "Your questions",
+    "savedHint": "Stored locally on this device.",
+    "empty": "You haven't added any questions yet.",
+    "delete": "Delete question",
+    "errors": {
+      "category": "Choose a category.",
+      "question": "The prompt is required.",
+      "answers": "Fill in at least two options.",
+      "correct": "Mark at least one correct answer."
+    },
+    "export": "Export set (.zip)",
+    "addImage": "Add image",
+    "addAnswer": "Add answer",
+    "removeAnswer": "Remove answer",
+    "import": "Import set (.zip)",
+    "imported": "Imported {{count}} questions. They are now available in their categories.",
+    "importError": "Could not import this set. Choose a valid question-set ZIP exported from this app.",
+    "editQuestion": "Edit question",
+    "update": "Update question",
+    "cancelEdit": "Cancel editing"
+  },
+  "home": {
+    "welcome": "Welcome to UrsSur",
+    "intro": "Build your driving theory knowledge with focused practice sets. Choose a category, answer at your own pace, and revisit questions you want to improve."
   }
 }

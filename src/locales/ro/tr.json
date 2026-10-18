@@ -22,6 +22,7 @@
     "share": "distribuie",
     "menu": "Meniu",
     "cancel": "Anulează",
+    "ok": "În regulă",
     "resetConfirmTitle": "Resetați progresul?",
     "resetConfirmText": "Aceasta va șterge progresul salvat și activele în cache (service worker). Această acțiune nu poate fi anulată.",
     "language": "Limba",
@@ -43,7 +44,72 @@
     "next": "Următoarea",
     "scoreOf": "{{score}}% — {{answered}} din {{total}} răspunse",
     "yourProgress": "Progresul tău",
+    "retakeNotReadyTitle": "Finalizează setul mai întâi",
+    "retakeNotReadyText": "Poți revizui răspunsurile greșite după ce termini toate întrebările din această categorie.",
     "answered": "răspunse",
-    "left": "rămase"
+    "left": "rămase",
+    "setQuestionPosition": "Setul {{category}} · întrebarea {{question}} din {{total}}"
+  },
+  "errorPage": {
+    "heading": "Ceva nu a funcționat",
+    "title": "Reîncearcă sau întoarce-te acasă."
+  },
+  "nav": {
+    "tagline": "Chestionare auto",
+    "navigation": "Navigare",
+    "categories": "Categorii",
+    "personal": "Personal",
+    "myQuestions": "Întrebări proprii",
+    "settings": "Setări",
+    "settingsDescription": "Limbă, aspect, offline și resetare",
+    "theme": "Aspect",
+    "light": "Luminos",
+    "dark": "Întunecat",
+    "retake": "Recapitulare",
+    "toggleProgress": "Arată progresul",
+    "overall": "General",
+    "accuracy": "Precizie",
+    "of": "din",
+    "sets": "Seturi",
+    "share": "Distribuie"
+  },
+  "custom": {
+    "title": "Întrebări proprii",
+    "subtitle": "Scrie-ți propriile întrebări și adaugă-le la o categorie existentă.",
+    "newQuestion": "Întrebare nouă",
+    "newQuestionHint": "Scrie întrebarea și variantele în limbile dorite, apoi marchează răspunsurile corecte.",
+    "category": "Categoria",
+    "question": "Întrebarea",
+    "questionPlaceholder": "Scrie enunțul întrebării…",
+    "answers": "Variante de răspuns",
+    "answersHint": "Adaugă între 2 și 20 de variante. Fiecare poate conține text, imagine sau ambele. Completează traducerile dorite și marchează răspunsurile corecte.",
+    "answerPlaceholder": "Varianta {{letter}}",
+    "markCorrect": "Marchează ca răspuns corect",
+    "save": "Salvează întrebarea",
+    "saved": "Întrebare salvată",
+    "savedTitle": "Întrebările tale",
+    "savedHint": "Salvate local, pe acest dispozitiv.",
+    "empty": "Nu ai adăugat încă nicio întrebare.",
+    "delete": "Șterge întrebarea",
+    "errors": {
+      "category": "Alege o categorie.",
+      "question": "Enunțul este obligatoriu.",
+      "answers": "Completează cel puțin două variante.",
+      "correct": "Alege cel puțin un răspuns corect."
+    },
+    "export": "Exportă setul (.zip)",
+    "addImage": "Adaugă imagine",
+    "addAnswer": "Adaugă variantă",
+    "removeAnswer": "Șterge varianta",
+    "import": "Importă set (.zip)",
+    "imported": "Au fost importate {{count}} întrebări. Sunt disponibile acum în categoriile lor.",
+    "importError": "Setul nu a putut fi importat. Alege un fișier ZIP valid exportat din această aplicație.",
+    "editQuestion": "Editează întrebarea",
+    "update": "Actualizează întrebarea",
+    "cancelEdit": "Anulează editarea"
+  },
+  "home": {
+    "welcome": "Bun venit la UrsSur",
+    "intro": "Învață teoria pentru permis prin seturi de exerciții. Alege o categorie, răspunde în ritmul tău și revino la întrebările pe care vrei să le aprofundezi."
   }
 }
