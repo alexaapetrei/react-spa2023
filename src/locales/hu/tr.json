@@ -22,6 +22,7 @@
     "share": "megosztás",
     "menu": "Menü",
     "cancel": "Mégse",
+    "ok": "Rendben",
     "resetConfirmTitle": "Előrehaladás visszaállítása?",
     "resetConfirmText": "Ez törli a mentett előrehaladást és a gyorsítótárban lévő fájlokat (service worker). A művelet nem visszavonható.",
     "language": "Nyelv",
@@ -43,7 +44,72 @@
     "next": "Következő",
     "scoreOf": "{{score}}% — {{answered}} / {{total}} megválaszolva",
     "yourProgress": "Haladásod",
+    "retakeNotReadyTitle": "Először fejezd be a kérdéssort",
+    "retakeNotReadyText": "A hibás válaszokat csak azután ismételheted át, hogy a kategória összes kérdésére válaszoltál.",
     "answered": "megválaszolva",
-    "left": "maradt"
+    "left": "maradt",
+    "setQuestionPosition": "{{category}}. készlet · {{question}}. kérdés / {{total}}"
+  },
+  "errorPage": {
+    "heading": "Valami hiba történt",
+    "title": "Próbáld újra, vagy térj vissza a kezdőlapra."
+  },
+  "nav": {
+    "tagline": "Vezetési tesztkérdések",
+    "navigation": "Navigáció",
+    "categories": "Kategóriák",
+    "personal": "Saját",
+    "myQuestions": "Saját kérdések",
+    "settings": "Beállítások",
+    "settingsDescription": "Nyelv, megjelenés, offline és visszaállítás",
+    "theme": "Megjelenés",
+    "light": "Világos",
+    "dark": "Sötét",
+    "retake": "Ismétlés",
+    "toggleProgress": "Haladás megjelenítése",
+    "overall": "Összesen",
+    "accuracy": "Pontosság",
+    "of": "ennyiből:",
+    "sets": "Feladatsorok",
+    "share": "Megosztás"
+  },
+  "custom": {
+    "title": "Saját kérdések",
+    "subtitle": "Írd meg a saját kérdéseidet, és sorold be egy meglévő kategóriába.",
+    "newQuestion": "Új kérdés",
+    "newQuestionHint": "Írd meg a kérdést és a válaszlehetőségeket a kívánt nyelveken, majd jelöld meg a helyes válaszokat.",
+    "category": "Kategória",
+    "question": "Kérdés",
+    "questionPlaceholder": "Írd le a kérdést…",
+    "answers": "Válaszlehetőségek",
+    "answersHint": "Adj meg 2–20 lehetőséget. Mindegyik tartalmazhat szöveget, képet vagy mindkettőt. Add meg a kívánt fordításokat, és jelöld be a helyes válaszokat.",
+    "answerPlaceholder": "{{letter}} válasz",
+    "markCorrect": "Megjelölés helyes válaszként",
+    "save": "Kérdés mentése",
+    "saved": "Kérdés elmentve",
+    "savedTitle": "A kérdéseid",
+    "savedHint": "Helyben, ezen az eszközön tárolva.",
+    "empty": "Még nem adtál hozzá kérdést.",
+    "delete": "Kérdés törlése",
+    "errors": {
+      "category": "Válassz kategóriát.",
+      "question": "A kérdés megadása kötelező.",
+      "answers": "Tölts ki legalább két választ.",
+      "correct": "Jelölj meg legalább egy helyes választ."
+    },
+    "export": "Készlet exportálása (.zip)",
+    "addImage": "Kép hozzáadása",
+    "addAnswer": "Válasz hozzáadása",
+    "removeAnswer": "Válasz eltávolítása",
+    "import": "Készlet importálása (.zip)",
+    "imported": "{{count}} kérdés importálva. Mostantól elérhetők a kategóriáikban.",
+    "importError": "A készlet importálása nem sikerült. Válassz egy ebből az alkalmazásból exportált, érvényes ZIP-fájlt.",
+    "editQuestion": "Kérdés szerkesztése",
+    "update": "Kérdés frissítése",
+    "cancelEdit": "Szerkesztés megszakítása"
+  },
+  "home": {
+    "welcome": "Üdvözöl az UrsSur",
+    "intro": "Gyakorold a közlekedési elméletet feladatsorokkal. Válassz kategóriát, haladj a saját tempódban, és térj vissza azokhoz a kérdésekhez, amelyeket még gyakorolnál."
   }
 }

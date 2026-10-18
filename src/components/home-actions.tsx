@@ -1,32 +1,30 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "./ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "./ui/card";
+import { Card, CardHeader, CardFooter } from "./ui/card";
 import { RotateCcw, Trash2 } from "lucide-react";
+import { clearAllProgress } from "@/lib/progress-store";
 
-export function HomeActions() {
+export function HomeActions({
+  onReset,
+  compact = false,
+  showUpdate = true,
+}: {
+  onReset: () => void;
+  compact?: boolean;
+  showUpdate?: boolean;
+}) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const performReset = async () => {
-    try {
-      localStorage.clear();
-
-      if ("serviceWorker" in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map((r) => r.unregister()));
-      }
-
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map((k) => caches.delete(k)));
-      }
-    } catch (err) {
-      console.warn("reset error:", err);
-    } finally {
-      location.reload();
-    }
+  const performReset = () => {
+    clearAllProgress();
+    setOpen(false);
+    onReset();
+    void navigate({ to: "/" });
   };
 
   const handleUpdate = async () => {
@@ -57,17 +55,27 @@ export function HomeActions() {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2">
-      <Button variant="outline" size="sm" className="w-full" onClick={handleUpdate}>
-        <RotateCcw className="mr-2 h-4 w-4" />
-        {t("test.update")}
-      </Button>
+    <div
+      className={`grid gap-2 ${import.meta.env.PROD && showUpdate ? "grid-cols-2" : "grid-cols-1"}`}
+    >
+      {import.meta.env.PROD && showUpdate && (
+        <Button variant="outline" size="sm" className="w-full" onClick={handleUpdate}>
+          <RotateCcw className="mr-2 h-4 w-4" />
+          {t("test.update")}
+        </Button>
+      )}
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger asChild>
-          <Button variant="destructive" size="sm" className="w-full">
-            <Trash2 className="mr-2 h-4 w-4" />
-            {t("common.reset")}
+          <Button
+            variant="destructive"
+            size={compact ? "icon" : "sm"}
+            className={compact ? "mx-auto size-8 p-0" : "w-full"}
+            aria-label={t("common.reset")}
+            title={compact ? t("common.reset") : undefined}
+          >
+            <Trash2 className={compact ? "size-4" : "mr-2 h-4 w-4"} />
+            {!compact && t("common.reset")}
           </Button>
         </Dialog.Trigger>
 

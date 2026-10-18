@@ -7,9 +7,30 @@ import { router } from "./router";
 import { ThemeProvider } from "./components/ui/theme-provider";
 import "./index.css";
 
-if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+} else if ("serviceWorker" in navigator && import.meta.env.DEV) {
+  void navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+    const developmentWorkerUrl = new URL("/sw.js", window.location.href).href;
+    const appRegistrations = registrations.filter((registration) =>
+      [registration.active, registration.waiting, registration.installing].some(
+        (worker) => worker?.scriptURL === developmentWorkerUrl,
+      ),
+    );
+    if (appRegistrations.length === 0) return;
+
+    await Promise.all(appRegistrations.map((registration) => registration.unregister()));
+
+    const reloadKey = "dev-service-worker-removed";
+    if (
+      navigator.serviceWorker.controller?.scriptURL === developmentWorkerUrl &&
+      !sessionStorage.getItem(reloadKey)
+    ) {
+      sessionStorage.setItem(reloadKey, "true");
+      window.location.reload();
+    }
   });
 }
 

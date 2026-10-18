@@ -10,13 +10,17 @@ import {
   CardFooter,
 } from "./components/ui/card";
 import { Progress } from "./components/ui/progress";
-import { RotateCcw } from "lucide-react";
+import { ArrowRight, RotateCcw } from "lucide-react";
 import type { Catego, LangKeys } from "./hooks/useCatego";
 import roData from "./data/catego.json";
-import { NavLayout } from "./components/nav";
+import { AppShell } from "./components/app-shell";
 import { TestView } from "./components/test-view";
 import { FinishedCard } from "./components/finished-card";
-import useLocalState from "./hooks/useLocalState";
+import { CustomQuestions } from "./pages/custom-questions";
+import { categoryStats, useProgress } from "./lib/progress-store";
+import { useCustomQuestions } from "./lib/custom-questions-store";
+import { toQuizQuestion } from "./lib/custom-question-adapter";
+import ErrorPage from "./errorPage";
 
 const validLangs: LangKeys[] = ["ro", "en", "de", "hu"];
 
@@ -38,41 +42,77 @@ type LoaderData = { questions: Catego; language: LangKeys };
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
-const rootRoute = createRootRoute({ component: NavLayout });
+const rootRoute = createRootRoute({ component: AppShell, errorComponent: ErrorPage });
 
-// ─── Index ────────────────────────────────────────────────────────────────────
+const homeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: Welcome,
+});
+
+// ─── Sets ─────────────────────────────────────────────────────────────────────
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/",
+  path: "/sets",
   loader: async () => {
     const lang = getCurrentLanguage();
     return { questions: await loadQuestions(lang), language: lang };
   },
-  // Cache so revisiting home after answering questions doesn't re-fetch;
+  // Cache so revisiting sets after answering questions doesn't re-fetch;
   // router.invalidate() (called on language change) bypasses this.
   staleTime: Infinity,
-  component: Index,
+  component: Sets,
 });
 
-function Index() {
+function Welcome() {
   const { t } = useTranslation();
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("home.welcome")}</CardTitle>
+          <CardDescription>{t("home.intro")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm leading-relaxed text-muted-foreground">{t("common.encourage")}</p>
+        </CardContent>
+        <CardFooter>
+          <Link to="/sets" preload={false}>
+            <Button>
+              {t("nav.sets")}
+              <ArrowRight className="ml-2 size-4" />
+            </Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+function Sets() {
   const { questions } = indexRoute.useLoaderData() as LoaderData;
-  const [state] = useLocalState();
+  const progress = useProgress();
+  const customQuestions = useCustomQuestions();
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl mx-auto">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Object.keys(questions).map((c) => {
-          const corecteCount = state.corecte.filter((q) => q.includes(c)).length;
-          const gresiteCount = state.gresite.filter((q) => q.includes(c)).length;
-          const totalCount = corecteCount + gresiteCount;
-          const maxQuestions = questions[c].length;
-          const percentage = maxQuestions > 0 ? (totalCount / maxQuestions) * 100 : 0;
+          const { correct, wrong, answered } = categoryStats(progress, c);
+          const maxQuestions =
+            questions[c].length +
+            customQuestions.filter((question) => question.categoria === c).length;
+          const percentage = maxQuestions > 0 ? (answered / maxQuestions) * 100 : 0;
 
           return (
-            <Link key={c} to={`/categoria/${c}/${totalCount}` as any} preload={false}>
-              <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+            <Link
+              key={c}
+              to="/categoria/$categoria/$nr"
+              params={{ categoria: c, nr: String(answered) }}
+              preload={false}
+            >
+              <Card className="cursor-pointer transition-colors hover:bg-accent/50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-center text-2xl font-black">
                     {c.toUpperCase()}
@@ -81,8 +121,8 @@ function Index() {
                 <CardContent className="space-y-2">
                   <Progress value={percentage} />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span className="text-green-600">{corecteCount}</span>
-                    <span className="text-red-600">{gresiteCount}</span>
+                    <span className="text-green-600">{correct}</span>
+                    <span className="text-red-600">{wrong}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -90,26 +130,21 @@ function Index() {
           );
         })}
       </div>
-
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-lg sm:text-3xl font-bold">{t("common.encourage")}</CardTitle>
-        </CardHeader>
-      </Card>
     </div>
   );
 }
 
-// ─── Categoria layout ─────────────────────────────────────────────────────────
+// ─── Categoria ────────────────────────────────────────────────────────────────
 //
 // Loads questions ONCE when entering a category. Child route handles the
 // question index ($nr). Navigating between questions only re-renders the
 // child — the loader here never fires again unless the language changes
-// (nav.tsx calls router.invalidate() on language change which resets the cache).
+// (SettingsPanel calls router.invalidate() on language change, resetting this).
 
 const categoriaLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/categoria/$categoria",
+  staticData: { questionContext: true },
   loader: async () => {
     const lang = getCurrentLanguage();
     return { questions: await loadQuestions(lang), language: lang };
@@ -129,13 +164,17 @@ function Categoria() {
   // Params come from both parent + child routes
   const { categoria = "b", nr = "0" } = categoriaRoute.useParams();
   // Data is from the parent layout loader
-  const { questions } = categoriaLayoutRoute.useLoaderData() as LoaderData;
+  const { questions, language } = categoriaLayoutRoute.useLoaderData() as LoaderData;
+  const customQuestions = useCustomQuestions();
+  const progress = useProgress();
   const numarul = Number(nr);
 
-  const raw = localStorage.getItem("state");
-  const state = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
-
-  const chosenCategory = questions[categoria];
+  const chosenCategory = [
+    ...(questions[categoria] ?? []),
+    ...customQuestions
+      .filter((question) => question.categoria === categoria)
+      .map((question) => toQuizQuestion(question, language)),
+  ];
   const chosen = chosenCategory?.[numarul];
   const last = !chosenCategory || numarul >= chosenCategory.length;
   const next = last ? chosenCategory?.length || 0 : numarul + 1;
@@ -143,16 +182,12 @@ function Categoria() {
   if (!chosen && !last) return <div>Loading…</div>;
 
   if (last) {
-    const wrongForCategory = (state.gresite as string[]).filter((q) => q.startsWith(categoria));
-    const correctForCategory = (state.corecte as string[]).filter((q) => q.startsWith(categoria));
-    const totalAnswered = wrongForCategory.length + correctForCategory.length;
-    const score =
-      totalAnswered > 0 ? Math.round((correctForCategory.length / totalAnswered) * 100) : 0;
+    const { correct, wrong, answered, accuracy } = categoryStats(progress, categoria);
 
-    if (wrongForCategory.length > 0) {
+    if (wrong > 0) {
       return (
         <div className="animate-in fade-in zoom-in duration-300">
-          <Card className="max-w-md mx-auto">
+          <Card className="mx-auto max-w-md">
             <CardHeader>
               <CardTitle>{t("test.done")}</CardTitle>
               <CardDescription>{t("test.congrats")}</CardDescription>
@@ -160,23 +195,28 @@ function Categoria() {
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm font-medium">
                 <span className="text-green-600">
-                  ✓ {correctForCategory.length} {t("common.right")}
+                  ✓ {correct} {t("common.right")}
                 </span>
                 <span className="text-red-500">
-                  ✗ {wrongForCategory.length} {t("common.wrong")}
+                  ✗ {wrong} {t("common.wrong")}
                 </span>
               </div>
-              <Progress value={score} className="h-2" />
-              <p className="text-xs text-muted-foreground text-center">
+              <Progress value={accuracy} className="h-2" />
+              <p className="text-center text-xs text-muted-foreground">
                 {t("test.scoreOf", {
-                  score,
-                  answered: totalAnswered,
-                  total: chosenCategory?.length ?? totalAnswered,
+                  score: accuracy,
+                  answered,
+                  total: chosenCategory?.length ?? answered,
                 })}
               </p>
             </CardContent>
             <CardFooter className="justify-center">
-              <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
+              <Link
+                to="/retake/$categoria/$nr"
+                params={{ categoria, nr: "0" }}
+                preload={false}
+                viewTransition
+              >
                 <Button>
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {t("test.startRetest")}
@@ -188,25 +228,20 @@ function Categoria() {
       );
     }
 
-    return (
-      <FinishedCard
-        correct={correctForCategory.length}
-        total={totalAnswered}
-        categoria={categoria}
-      />
-    );
+    return <FinishedCard correct={correct} total={answered} categoria={categoria} />;
   }
 
   return <TestView chosen={chosen} categoria={categoria} next={next} isRetake={false} />;
 }
 
-// ─── Retake layout ────────────────────────────────────────────────────────────
+// ─── Retake ───────────────────────────────────────────────────────────────────
 //
 // Same pattern as categoriaLayoutRoute — questions load once per retake session.
 
 const retakeLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/retake/$categoria",
+  staticData: { questionContext: true },
   loader: async () => {
     const lang = getCurrentLanguage();
     return { questions: await loadQuestions(lang), language: lang };
@@ -224,34 +259,33 @@ const retakeRoute = createRoute({
 function Retake() {
   const { t } = useTranslation();
   const { categoria = "b", nr = "0" } = retakeRoute.useParams();
-  const { questions } = retakeLayoutRoute.useLoaderData() as LoaderData;
+  const { questions, language } = retakeLayoutRoute.useLoaderData() as LoaderData;
+  const customQuestions = useCustomQuestions();
+  const progress = useProgress();
   const numarul = Number(nr);
 
-  const raw = localStorage.getItem("state");
-  const savedState = raw ? JSON.parse(raw) : { corecte: [], gresite: [] };
-  const wrongAnswers: string[] = savedState.gresite;
-  const categoryWrong = wrongAnswers.filter((q) => q.startsWith(categoria));
-  const categoryCorrect = (savedState.corecte as string[]).filter((q) => q.startsWith(categoria));
-
-  const chosenCategory = questions[categoria];
-  const wrongIds = new Set(categoryWrong);
+  const chosenCategory = [
+    ...(questions[categoria] ?? []),
+    ...customQuestions
+      .filter((question) => question.categoria === categoria)
+      .map((question) => toQuizQuestion(question, language)),
+  ];
+  const wrongIds = new Set(progress.gresite);
   const wrongQuestions = chosenCategory?.filter((q) => wrongIds.has(q.id)) || [];
 
   const chosen = wrongQuestions[numarul];
   const next = numarul + 1;
 
-  // Stats for completion screens
-  const totalAnswered = categoryCorrect.length + categoryWrong.length;
-  const retakeScore =
-    totalAnswered > 0 ? Math.round((categoryCorrect.length / totalAnswered) * 100) : 100;
+  // Stats for the completion screens
+  const { correct, wrong, answered, accuracy } = categoryStats(progress, categoria);
 
   // Finished this retake pass — check current state to decide which screen
   if (!chosen) {
-    if (categoryWrong.length > 0) {
+    if (wrong > 0) {
       // Still wrong answers remaining → offer another retake pass
       return (
         <div className="animate-in fade-in zoom-in duration-300">
-          <Card className="max-w-md mx-auto">
+          <Card className="mx-auto max-w-md">
             <CardHeader>
               <CardTitle>{t("test.done")}</CardTitle>
               <CardDescription>{t("test.congrats")}</CardDescription>
@@ -259,23 +293,28 @@ function Retake() {
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm font-medium">
                 <span className="text-green-600">
-                  ✓ {categoryCorrect.length} {t("common.right")}
+                  ✓ {correct} {t("common.right")}
                 </span>
                 <span className="text-red-500">
-                  ✗ {categoryWrong.length} {t("common.wrong")}
+                  ✗ {wrong} {t("common.wrong")}
                 </span>
               </div>
-              <Progress value={retakeScore} className="h-2" />
-              <p className="text-xs text-muted-foreground text-center">
+              <Progress value={accuracy} className="h-2" />
+              <p className="text-center text-xs text-muted-foreground">
                 {t("test.scoreOf", {
-                  score: retakeScore,
-                  answered: totalAnswered,
-                  total: chosenCategory?.length ?? totalAnswered,
+                  score: accuracy,
+                  answered,
+                  total: chosenCategory?.length ?? answered,
                 })}
               </p>
             </CardContent>
             <CardFooter className="justify-center">
-              <Link to={`/retake/${categoria}/0` as any} preload={false} viewTransition>
+              <Link
+                to="/retake/$categoria/$nr"
+                params={{ categoria, nr: "0" }}
+                preload={false}
+                viewTransition
+              >
                 <Button>
                   <RotateCcw className="mr-2 h-4 w-4" />
                   {t("test.startRetest")}
@@ -288,20 +327,28 @@ function Retake() {
     }
 
     // All wrong answers cleared → confetti!
-    return (
-      <FinishedCard correct={categoryCorrect.length} total={totalAnswered} categoria={categoria} />
-    );
+    return <FinishedCard correct={correct} total={answered} categoria={categoria} />;
   }
 
   return <TestView chosen={chosen} categoria={categoria} next={next} isRetake={true} />;
 }
 
+// ─── Custom questions ─────────────────────────────────────────────────────────
+
+const customQuestionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/intrebari",
+  component: CustomQuestions,
+});
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 const routeTree = rootRoute.addChildren([
+  homeRoute,
   indexRoute,
   categoriaLayoutRoute.addChildren([categoriaRoute]),
   retakeLayoutRoute.addChildren([retakeRoute]),
+  customQuestionsRoute,
 ]);
 
 const router = createRouter({

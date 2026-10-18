@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import ro from "../data/catego.json";
+import type { LocalizedContent } from "../lib/custom-questions-store";
+
+export type QuizContent = string | LocalizedContent;
 
 export type Ans = {
-  [key: string]: string;
+  [key: string]: QuizContent;
 };
 
 export type Category = {
   id: string;
-  q: string;
+  q: QuizContent;
   ans: Ans;
   v: string;
   i?: number;

@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Agent tooling — installed via `skills add`, versions pinned in skills-lock.json
+.agents/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -22,6 +22,7 @@
     "share": "teilen",
     "menu": "Menü",
     "cancel": "Abbrechen",
+    "ok": "OK",
     "resetConfirmTitle": "Fortschritt zurücksetzen?",
     "resetConfirmText": "Dadurch werden gespeicherte Fortschritte und zwischengespeicherte Dateien (Service Worker) gelöscht. Dies kann nicht rückgängig gemacht werden.",
     "language": "Sprache",
@@ -43,7 +44,72 @@
     "next": "Weiter",
     "scoreOf": "{{score}}% — {{answered}} von {{total}} beantwortet",
     "yourProgress": "Dein Fortschritt",
+    "retakeNotReadyTitle": "Beende zuerst den Fragenblock",
+    "retakeNotReadyText": "Falsche Antworten kannst du erst wiederholen, wenn du alle Fragen in dieser Kategorie beantwortet hast.",
     "answered": "beantwortet",
-    "left": "übrig"
+    "left": "übrig",
+    "setQuestionPosition": "Satz {{category}} · Frage {{question}} von {{total}}"
+  },
+  "errorPage": {
+    "heading": "Etwas ist schiefgelaufen",
+    "title": "Versuche es erneut oder geh zurück zur Startseite."
+  },
+  "nav": {
+    "tagline": "Führerschein-Tests",
+    "navigation": "Navigation",
+    "categories": "Kategorien",
+    "personal": "Persönlich",
+    "myQuestions": "Eigene Fragen",
+    "settings": "Einstellungen",
+    "settingsDescription": "Sprache, Erscheinungsbild, Offline und Zurücksetzen",
+    "theme": "Erscheinungsbild",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "retake": "Wiederholung",
+    "toggleProgress": "Fortschritt anzeigen",
+    "overall": "Gesamt",
+    "accuracy": "Genauigkeit",
+    "of": "von",
+    "sets": "Lernsets",
+    "share": "Teilen"
+  },
+  "custom": {
+    "title": "Eigene Fragen",
+    "subtitle": "Schreibe eigene Fragen und ordne sie einer bestehenden Kategorie zu.",
+    "newQuestion": "Neue Frage",
+    "newQuestionHint": "Schreibe Frage und Optionen in den gewünschten Sprachen und markiere die richtigen Antworten.",
+    "category": "Kategorie",
+    "question": "Frage",
+    "questionPlaceholder": "Schreibe die Frage…",
+    "answers": "Antwortmöglichkeiten",
+    "answersHint": "Füge 2 bis 20 Optionen hinzu. Jede Option kann Text, ein Bild oder beides enthalten. Trage die gewünschten Übersetzungen ein und markiere die richtigen Antworten.",
+    "answerPlaceholder": "Antwort {{letter}}",
+    "markCorrect": "Als richtige Antwort markieren",
+    "save": "Frage speichern",
+    "saved": "Frage gespeichert",
+    "savedTitle": "Deine Fragen",
+    "savedHint": "Lokal auf diesem Gerät gespeichert.",
+    "empty": "Du hast noch keine Fragen hinzugefügt.",
+    "delete": "Frage löschen",
+    "errors": {
+      "category": "Wähle eine Kategorie.",
+      "question": "Die Frage ist erforderlich.",
+      "answers": "Fülle mindestens zwei Antworten aus.",
+      "correct": "Markiere mindestens eine richtige Antwort."
+    },
+    "export": "Set exportieren (.zip)",
+    "addImage": "Bild hinzufügen",
+    "addAnswer": "Antwort hinzufügen",
+    "removeAnswer": "Antwort entfernen",
+    "import": "Set importieren (.zip)",
+    "imported": "{{count}} Fragen importiert. Sie sind jetzt in ihren Kategorien verfügbar.",
+    "importError": "Dieses Set konnte nicht importiert werden. Wähle eine gültige, von dieser App exportierte ZIP-Datei.",
+    "editQuestion": "Frage bearbeiten",
+    "update": "Frage aktualisieren",
+    "cancelEdit": "Bearbeitung abbrechen"
+  },
+  "home": {
+    "welcome": "Willkommen bei UrsSur",
+    "intro": "Lerne die Theorie für den Führerschein mit gezielten Übungssets. Wähle eine Kategorie, beantworte die Fragen in deinem Tempo und wiederhole Fragen, bei denen du noch üben möchtest."
   }
 }

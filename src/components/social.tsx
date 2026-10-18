@@ -1,78 +1,53 @@
-import { useState, useEffect } from "react";
 import { MessageCircle, Facebook, Mail, Twitter } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function Social() {
   const { t } = useTranslation();
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-  }, []);
-
-  const socialLinks = [
+  const url = typeof window === "undefined" ? "https://test.urssur.com" : window.location.origin;
+  const message = `${t("common.disourage")} ${url}`;
+  const links = [
     {
       icon: MessageCircle,
       label: "WhatsApp",
-      href: isMobile
-        ? "whatsapp://send?text=https://test.urssur.com E cea mai faina metoda de a invata pentru examenul sala"
-        : "https://api.whatsapp.com/send?text=https://test.urssur.com E cea mai faina metoda de a invata pentru examenul sala",
-      show: true,
+      href: `whatsapp://send?text=${encodeURIComponent(message)}`,
     },
-    {
-      icon: MessageCircle,
-      label: "SMS",
-      href: "sms:?&body=https://test.urssur.com",
-      show: isMobile,
-    },
+    { icon: MessageCircle, label: "SMS", href: `sms:?body=${encodeURIComponent(message)}` },
     {
       icon: Facebook,
       label: "Facebook",
-      href: "https://www.facebook.com/sharer/sharer.php?u=https://test.urssur.com",
-      show: true,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     },
     {
       icon: MessageCircle,
       label: "Messenger",
-      href: "fb-messenger://share/?link=https://test.urssur.com",
-      show: isMobile,
+      href: `fb-messenger://share/?link=${encodeURIComponent(url)}`,
     },
     {
       icon: Mail,
       label: "Email",
-      href: "mailto:?subject=Chestionare Auto DRPCIV - Invata pe UrsSur.com&body=Cea mai buna metoda de a invata pentru examenul sala: https://test.urssur.com",
-      show: true,
+      href: `mailto:?subject=${encodeURIComponent("UrsSur")}&body=${encodeURIComponent(message)}`,
     },
     {
       icon: Twitter,
       label: "Twitter",
-      href: "https://twitter.com/intent/tweet?source=https://test.urssur.com&text=Chestionare Auto DRPCIV - Invata pe UrsSur.com: https://test.urssur.com&via=urssur",
-      show: true,
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`,
     },
   ];
 
-  const visibleLinks = socialLinks.filter((link) => link.show);
-
   return (
-    <div className="mt-auto pt-4">
-      <p className="text-sm text-muted-foreground text-center mb-4">{t("common.disourage")}</p>
+    <div className="space-y-5">
+      <p className="text-center text-lg text-muted-foreground">{t("common.disourage")}</p>
       <div className="grid grid-cols-2 gap-2">
-        {visibleLinks.map((link, index) => (
+        {links.map((link) => (
           <a
-            key={index}
-            className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
+            key={link.label}
+            className="flex min-h-14 items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
             href={link.href}
-            target={
-              !link.href.startsWith("sms:") &&
-              !link.href.startsWith("whatsapp:") &&
-              !link.href.startsWith("mailto:")
-                ? "_blank"
-                : undefined
-            }
+            target={link.href.startsWith("http") ? "_blank" : undefined}
             rel="noopener noreferrer"
           >
-            <link.icon className="h-4 w-4" />
-            {link.label}
+            <link.icon className="size-5 shrink-0" />
+            <span>{link.label}</span>
           </a>
         ))}
       </div>
