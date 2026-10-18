@@ -43,7 +43,7 @@ export function AppSidebarLeft() {
   const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { setOpenMobile, state: sidebarState } = useSidebar();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [shareOpen, setShareOpen] = useState(false);
 
   /** No-op on desktop, where this rail is a persistent column. */
@@ -59,7 +59,7 @@ export function AppSidebarLeft() {
     <>
       <Sidebar side="left" collapsible="icon">
         <SidebarHeader>
-          <SidebarMenu>
+          <SidebarMenu className="gap-2">
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild tooltip="UrsSur">
                 <Link to="/" onClick={dismissIfOverlay}>
@@ -75,7 +75,7 @@ export function AppSidebarLeft() {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+            <SidebarMenuItem className="mt-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton tooltip={t("common.language")}>
@@ -98,25 +98,47 @@ export function AppSidebarLeft() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </SidebarMenuItem>
-            <SidebarMenuItem className="mt-1">
-              <SidebarMenuButton
-                isActive={theme === "light"}
-                onClick={() => setTheme("light")}
-                tooltip={t("nav.light")}
-              >
-                <Sun />
-                <span>{t("nav.light")}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={theme === "dark"}
-                onClick={() => setTheme("dark")}
-                tooltip={t("nav.dark")}
+              <div
+                role="group"
+                aria-label={t("nav.theme")}
+                className="grid grid-cols-2 gap-1 rounded-xl border bg-muted/70 p-1 group-data-[collapsible=icon]:grid-cols-1 group-data-[collapsible=icon]:gap-0.5 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0"
               >
-                <Moon />
-                <span>{t("nav.dark")}</span>
-              </SidebarMenuButton>
+                <button
+                  type="button"
+                  aria-pressed={resolvedTheme === "light"}
+                  aria-label={t("nav.light")}
+                  title={t("nav.light")}
+                  onClick={() => setTheme("light")}
+                  className={`flex min-h-9 min-w-0 items-center justify-center gap-2 rounded-lg px-2 text-sm font-medium transition-colors group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:min-h-8 group-data-[collapsible=icon]:px-0 ${
+                    resolvedTheme === "light"
+                      ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Sun className="size-4 shrink-0" />
+                  <span className="truncate group-data-[collapsible=icon]:hidden">
+                    {t("nav.light")}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={resolvedTheme === "dark"}
+                  aria-label={t("nav.dark")}
+                  title={t("nav.dark")}
+                  onClick={() => setTheme("dark")}
+                  className={`flex min-h-9 min-w-0 items-center justify-center gap-2 rounded-lg px-2 text-sm font-medium transition-colors group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:min-h-8 group-data-[collapsible=icon]:px-0 ${
+                    resolvedTheme === "dark"
+                      ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Moon className="size-4 shrink-0" />
+                  <span className="truncate group-data-[collapsible=icon]:hidden">
+                    {t("nav.dark")}
+                  </span>
+                </button>
+              </div>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
@@ -124,7 +146,7 @@ export function AppSidebarLeft() {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={pathname === "/"} tooltip={t("common.home")}>
                     <Link to="/" onClick={dismissIfOverlay}>
@@ -155,7 +177,7 @@ export function AppSidebarLeft() {
 
           <SidebarGroup>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
