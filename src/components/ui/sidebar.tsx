@@ -194,8 +194,8 @@ function Sidebar({
           "fixed inset-y-0 z-10 flex w-(--sidebar-width) flex-col overscroll-contain overflow-hidden touch-pan-y bg-sidebar text-sidebar-foreground",
           openMobile ? "visible" : "invisible",
           side === "left"
-            ? "left-0 border-r dark:border-r-cyan-400/50 dark:shadow-[8px_0_24px_-8px_rgba(34,211,238,0.55)]"
-            : "right-0 border-l dark:border-l-cyan-400/50 dark:shadow-[-8px_0_24px_-8px_rgba(34,211,238,0.55)]",
+            ? "left-0 border-r dark:border-r-cyan-300/60 dark:shadow-[8px_0_28px_0_rgba(34,211,238,0.65),16px_0_48px_4px_rgba(34,211,238,0.3)]"
+            : "right-0 border-l dark:border-l-cyan-300/60 dark:shadow-[-8px_0_28px_0_rgba(34,211,238,0.65),-16px_0_48px_4px_rgba(34,211,238,0.3)]",
           className,
         )}
         style={
@@ -243,8 +243,8 @@ function Sidebar({
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
           side === "left"
-            ? "dark:border-r-cyan-400/50 dark:shadow-[8px_0_24px_-8px_rgba(34,211,238,0.55)]"
-            : "dark:border-l-cyan-400/50 dark:shadow-[-8px_0_24px_-8px_rgba(34,211,238,0.55)]",
+            ? "dark:border-r-cyan-300/60 dark:shadow-[8px_0_28px_0_rgba(34,211,238,0.65),16px_0_48px_4px_rgba(34,211,238,0.3)]"
+            : "dark:border-l-cyan-300/60 dark:shadow-[-8px_0_28px_0_rgba(34,211,238,0.65),-16px_0_48px_4px_rgba(34,211,238,0.3)]",
           className,
         )}
         {...props}
