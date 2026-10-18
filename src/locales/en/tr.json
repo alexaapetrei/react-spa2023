@@ -95,9 +95,14 @@
       "category": "Choose a category.",
       "question": "The prompt is required.",
       "answers": "Fill in at least two options.",
-      "correct": "Mark at least one correct answer."
+      "correct": "Mark at least one correct answer.",
+      "image": "This image could not be processed. Try another image.",
+      "storage": "Browser storage is full. Export your set or remove some images, then try again."
     },
-    "export": "Export set (.zip)",
+    "export": "Export + images (.zip)",
+    "exportHint": "The ZIP contains set.json and an images folder, ready to back up or move to another device.",
+    "processingImage": "Preparing image…",
+    "removeImage": "Remove image",
     "addImage": "Add image",
     "addAnswer": "Add answer",
     "removeAnswer": "Remove answer",

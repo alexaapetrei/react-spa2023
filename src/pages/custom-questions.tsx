@@ -32,6 +32,7 @@ import {
 } from "@/lib/custom-questions-store";
 
 const MAX_ANSWERS = 20;
+const MAX_IMAGE_DIMENSION = 1600;
 const keyAt = (index: number) => String.fromCharCode(97 + index);
 const emptyContent = (): LocalizedContent => ({ text: {} });
 const emptyForm = () => ({
@@ -51,50 +52,124 @@ const languageNames: Record<ContentLanguage, string> = {
   hu: "Magyar",
 };
 
-function readImage(event: ChangeEvent<HTMLInputElement>, setImage: (value: string) => void) {
+function readAsDataUrl(file: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function optimizeImage(file: File): Promise<string> {
+  if (typeof createImageBitmap !== "function") return readAsDataUrl(file);
+  // Preserve animated images and vectors; raster conversion would flatten or rasterize them.
+  if (file.type === "image/gif" || file.type === "image/svg+xml") return readAsDataUrl(file);
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return readAsDataUrl(file);
+  }
+  try {
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height));
+    if (scale === 1 && file.size <= 1_500_000) return readAsDataUrl(file);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) return readAsDataUrl(file);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const optimized = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", 0.82),
+    );
+    return readAsDataUrl(optimized ?? file);
+  } finally {
+    bitmap.close();
+  }
+}
+
+async function readImage(
+  event: ChangeEvent<HTMLInputElement>,
+  setImage: (value: string) => void,
+  setError: (value: boolean) => void,
+): Promise<void> {
   const file = event.target.files?.[0];
   if (!file) return;
-  if (!file.type.startsWith("image/")) return;
-  const reader = new FileReader();
-  reader.onload = () => setImage(String(reader.result));
-  reader.readAsDataURL(file);
+  setError(false);
+  if (!file.type.startsWith("image/")) {
+    setError(true);
+    event.target.value = "";
+    return;
+  }
   event.target.value = "";
+  try {
+    setImage(await optimizeImage(file));
+  } catch {
+    setError(true);
+  }
 }
 
 function ImageField({
   image,
   onChange,
   label,
+  errorLabel,
+  processingLabel,
+  removeImageLabel,
 }: {
   image?: string;
   onChange: (value: string) => void;
   label: string;
+  errorLabel: string;
+  processingLabel: string;
+  removeImageLabel: string;
 }) {
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(false);
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent">
-        <ImagePlus className="size-4" />
-        {label}
-        <input
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          onChange={(event) => readImage(event, onChange)}
-        />
-      </label>
-      {image && (
-        <>
-          <img src={image} alt="" className="h-12 max-w-24 rounded border object-contain" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Remove image"
-            onClick={() => onChange("")}
-          >
-            <Trash2 />
-          </Button>
-        </>
+    <div className="space-y-1">
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent focus-within:ring-2 focus-within:ring-ring/50">
+          <ImagePlus className="size-4" />
+          {label}
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              setProcessing(true);
+              void readImage(event, onChange, setError).finally(() => setProcessing(false));
+            }}
+          />
+        </label>
+        {image && (
+          <>
+            <img
+              src={image}
+              alt=""
+              className="h-12 max-w-24 rounded border border-border bg-muted/40 object-contain"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={removeImageLabel}
+              title={removeImageLabel}
+              onClick={() => onChange("")}
+            >
+              <Trash2 />
+            </Button>
+          </>
+        )}
+      </div>
+      {processing && <p className="text-xs text-muted-foreground">{processingLabel}</p>}
+      {error && (
+        <p className="text-xs text-destructive" role="alert">
+          {errorLabel}
+        </p>
       )}
     </div>
   );
@@ -168,8 +243,13 @@ export function CustomQuestions() {
       ans,
       correct,
     };
-    if (editingId) updateCustomQuestion(editingId, input);
-    else addCustomQuestion(input);
+    try {
+      if (editingId) updateCustomQuestion(editingId, input);
+      else addCustomQuestion(input);
+    } catch {
+      setError(t("custom.errors.storage"));
+      return;
+    }
     setForm(emptyForm());
     setEditingId(null);
     setError("");
@@ -226,8 +306,10 @@ export function CustomQuestions() {
     const link = document.createElement("a");
     link.href = url;
     link.download = "question-set.zip";
+    document.body.append(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   };
 
   const importSet = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -253,7 +335,7 @@ export function CustomQuestions() {
           <h1 className="text-2xl font-semibold tracking-tight">{t("custom.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("custom.subtitle")}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full gap-2 sm:w-auto">
           <input
             ref={importInput}
             type="file"
@@ -261,16 +343,28 @@ export function CustomQuestions() {
             className="sr-only"
             onChange={importSet}
           />
-          <Button type="button" variant="outline" onClick={() => importInput.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-w-0 flex-1 sm:flex-none"
+            onClick={() => importInput.current?.click()}
+          >
             <FolderUp />
-            {t("custom.import")}
+            <span className="truncate">{t("custom.import")}</span>
           </Button>
-          <Button type="button" variant="outline" onClick={exportSet} disabled={!questions.length}>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-w-0 flex-1 sm:flex-none"
+            onClick={exportSet}
+            disabled={!questions.length}
+          >
             <Download />
-            {t("custom.export")}
+            <span className="truncate">{t("custom.export")}</span>
           </Button>
         </div>
       </header>
+      <p className="-mt-4 text-xs text-muted-foreground">{t("custom.exportHint")}</p>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
         <Card>
           <CardHeader>
@@ -313,6 +407,9 @@ export function CustomQuestions() {
                 <ImageField
                   image={form.qImage}
                   label={t("custom.addImage")}
+                  errorLabel={t("custom.errors.image")}
+                  processingLabel={t("custom.processingImage")}
+                  removeImageLabel={t("custom.removeImage")}
                   onChange={(qImage) => setForm((current) => ({ ...current, qImage }))}
                 />
               </div>
@@ -329,7 +426,10 @@ export function CustomQuestions() {
                   {form.answers.map((answer, index) => {
                     const key = keyAt(index);
                     return (
-                      <div key={key} className="space-y-2 rounded-lg border p-3">
+                      <div
+                        key={key}
+                        className="space-y-2 rounded-lg border border-border p-3 dark:bg-muted/30"
+                      >
                         <div className="flex items-center gap-2">
                           <span className="w-7 shrink-0 text-sm font-bold uppercase">{key}.</span>
                           <Input
@@ -378,6 +478,9 @@ export function CustomQuestions() {
                         <ImageField
                           image={answer.image}
                           label={t("custom.addImage")}
+                          errorLabel={t("custom.errors.image")}
+                          processingLabel={t("custom.processingImage")}
+                          removeImageLabel={t("custom.removeImage")}
                           onChange={(value) => updateAnswerImage(index, value)}
                         />
                       </div>
@@ -667,7 +770,11 @@ function SavedQuestion({
       </div>
       <p className="text-sm font-medium leading-snug">{text}</p>
       {question.q.image && (
-        <img src={question.q.image} alt="" className="max-h-28 rounded object-contain" />
+        <img
+          src={question.q.image}
+          alt=""
+          className="max-h-28 rounded border border-border bg-muted/40 object-contain"
+        />
       )}
       <ul className="space-y-2">
         {Object.entries(question.ans).map(([key, content]) => (
