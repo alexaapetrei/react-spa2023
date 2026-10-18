@@ -97,7 +97,7 @@
       "answers": "Completează cel puțin două variante.",
       "correct": "Alege cel puțin un răspuns corect.",
       "image": "Imaginea nu a putut fi procesată. Încearcă altă imagine.",
-      "storage": "Spațiul de stocare al browserului este plin. Exportă setul sau șterge câteva imagini și încearcă din nou."
+      "storage": "Nu s-a putut salva în spațiul browserului. Verifică spațiul disponibil și încearcă din nou."
     },
     "export": "Exportă + imagini (.zip)",
     "exportHint": "Arhiva ZIP conține set.json și un dosar cu imagini, pentru backup sau transfer pe alt dispozitiv.",

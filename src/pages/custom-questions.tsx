@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { StoredImage } from "@/components/ui/stored-image";
 import { Textarea } from "@/components/ui/textarea";
 import { CATEGORY_IDS, categoryLabel } from "@/lib/categories";
 import {
@@ -35,14 +36,17 @@ const MAX_ANSWERS = 20;
 const MAX_IMAGE_WIDTH = 1024;
 const keyAt = (index: number) => String.fromCharCode(97 + index);
 const emptyContent = (): LocalizedContent => ({ text: {} });
-const emptyForm = () => ({
+const emptyForm = (): {
+  categoria: string;
+  q: LocalizedContent;
+  qImage?: Blob;
+  answers: LocalizedContent[];
+  correct: string[];
+} => ({
   categoria: CATEGORY_IDS[0] ?? "a",
   q: emptyContent(),
-  qImage: "",
-  answers: [
-    { ...emptyContent(), image: "" } as LocalizedContent,
-    { ...emptyContent(), image: "" } as LocalizedContent,
-  ],
+  qImage: undefined,
+  answers: [emptyContent(), emptyContent()],
   correct: [] as string[],
 });
 const languageNames: Record<ContentLanguage, string> = {
@@ -52,40 +56,31 @@ const languageNames: Record<ContentLanguage, string> = {
   hu: "Magyar",
 };
 
-function readAsDataUrl(file: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
-async function optimizeImage(file: File): Promise<string> {
-  if (typeof createImageBitmap !== "function") return readAsDataUrl(file);
+async function optimizeImage(file: File): Promise<Blob> {
+  if (typeof createImageBitmap !== "function") return file;
   // Preserve animated images and vectors; raster conversion would flatten or rasterize them.
-  if (file.type === "image/gif" || file.type === "image/svg+xml") return readAsDataUrl(file);
+  if (file.type === "image/gif" || file.type === "image/svg+xml") return file;
 
   let bitmap: ImageBitmap;
   try {
     bitmap = await createImageBitmap(file);
   } catch {
-    return readAsDataUrl(file);
+    return file;
   }
   try {
     const scale = Math.min(1, MAX_IMAGE_WIDTH / bitmap.width);
-    if (scale === 1 && file.size <= 256_000) return readAsDataUrl(file);
+    if (scale === 1 && file.size <= 256_000) return file;
 
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));
     canvas.height = Math.max(1, Math.round(bitmap.height * scale));
     const context = canvas.getContext("2d");
-    if (!context) return readAsDataUrl(file);
+    if (!context) return file;
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     const optimized = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/webp", 0.82),
     );
-    return readAsDataUrl(optimized ?? file);
+    return optimized ?? file;
   } finally {
     bitmap.close();
   }
@@ -93,7 +88,7 @@ async function optimizeImage(file: File): Promise<string> {
 
 async function readImage(
   event: ChangeEvent<HTMLInputElement>,
-  setImage: (value: string) => void,
+  setImage: (value: Blob) => void,
   setError: (value: boolean) => void,
 ): Promise<void> {
   const file = event.target.files?.[0];
@@ -120,8 +115,8 @@ function ImageField({
   processingLabel,
   removeImageLabel,
 }: {
-  image?: string;
-  onChange: (value: string) => void;
+  image?: Blob;
+  onChange: (value?: Blob) => void;
   label: string;
   errorLabel: string;
   processingLabel: string;
@@ -147,7 +142,7 @@ function ImageField({
         </label>
         {image && (
           <>
-            <img
+            <StoredImage
               src={image}
               alt=""
               className="h-12 max-w-24 rounded border border-border bg-muted/40 object-contain"
@@ -158,7 +153,7 @@ function ImageField({
               size="icon-sm"
               aria-label={removeImageLabel}
               title={removeImageLabel}
-              onClick={() => onChange("")}
+              onClick={() => onChange(undefined)}
             >
               <Trash2 />
             </Button>
@@ -198,7 +193,7 @@ export function CustomQuestions() {
         i === index ? { ...answer, text: { ...answer.text, [lang]: value } } : answer,
       ),
     }));
-  const updateAnswerImage = (index: number, value: string) =>
+  const updateAnswerImage = (index: number, value?: Blob) =>
     setForm((current) => ({
       ...current,
       answers: current.answers.map((answer, i) =>
@@ -213,7 +208,7 @@ export function CustomQuestions() {
         : [...current.correct, key],
     }));
 
-  const save = (event: React.FormEvent) => {
+  const save = async (event: React.FormEvent) => {
     event.preventDefault();
     const populated = form.answers
       .map((answer, index) => ({ answer, key: keyAt(index) }))
@@ -244,8 +239,8 @@ export function CustomQuestions() {
       correct,
     };
     try {
-      if (editingId) updateCustomQuestion(editingId, input);
-      else addCustomQuestion(input);
+      if (editingId) await updateCustomQuestion(editingId, input);
+      else await addCustomQuestion(input);
     } catch {
       setError(t("custom.errors.storage"));
       return;
@@ -261,7 +256,7 @@ export function CustomQuestions() {
     setForm({
       categoria: question.categoria,
       q: { text: question.q.text },
-      qImage: question.q.image ?? "",
+      qImage: question.q.image,
       answers: Object.entries(question.ans).map(([, answer]) => ({
         text: { ...answer.text },
         image: answer.image,
@@ -282,16 +277,24 @@ export function CustomQuestions() {
 
   const exportSet = async () => {
     const images: Record<string, Uint8Array> = {};
-    const exported = questions.map((question, questionIndex) => {
-      const q = exportContent(question.q, `images/question-${questionIndex + 1}`, images);
-      const ans = Object.fromEntries(
-        Object.entries(question.ans).map(([key, value]) => [
-          key,
-          exportContent(value, `images/question-${questionIndex + 1}-answer-${key}`, images),
-        ]),
-      );
-      return { ...question, q, ans };
-    });
+    const exported = await Promise.all(
+      questions.map(async (question, questionIndex) => {
+        const q = await exportContent(question.q, `images/question-${questionIndex + 1}`, images);
+        const ans = Object.fromEntries(
+          await Promise.all(
+            Object.entries(question.ans).map(async ([key, value]) => [
+              key,
+              await exportContent(
+                value,
+                `images/question-${questionIndex + 1}-answer-${key}`,
+                images,
+              ),
+            ]),
+          ),
+        );
+        return { ...question, q, ans };
+      }),
+    );
     const archive = zipSync({
       "set.json": strToU8(
         JSON.stringify(
@@ -319,7 +322,7 @@ export function CustomQuestions() {
     setImportMessage("");
     try {
       const imported = parseQuestionSet(new Uint8Array(await file.arrayBuffer()));
-      addCustomQuestions(imported);
+      await addCustomQuestions(imported);
       setImportMessage(t("custom.imported", { count: imported.length }));
     } catch {
       setError(t("custom.importError"));
@@ -551,7 +554,9 @@ export function CustomQuestions() {
                       question={question}
                       onEdit={() => editQuestion(question)}
                       onDelete={() => {
-                        removeCustomQuestion(question.id);
+                        void removeCustomQuestion(question.id).catch(() =>
+                          setError(t("custom.errors.storage")),
+                        );
                         if (editingId === question.id) cancelEdit();
                       }}
                     />
@@ -591,15 +596,14 @@ function LanguageTabs({
   );
 }
 
-function exportContent(
+async function exportContent(
   content: LocalizedContent,
   path: string,
   images: Record<string, Uint8Array>,
-) {
+): Promise<{ text: LocalizedContent["text"]; image?: string }> {
   const result: { text: LocalizedContent["text"]; image?: string } = { text: content.text };
   if (content.image) {
-    const [meta, data] = content.image.split(",");
-    const mime = /^data:(image\/[^;,]+)/.exec(meta)?.[1] ?? "image/jpeg";
+    const mime = content.image.type || "image/jpeg";
     const extension =
       (
         {
@@ -612,7 +616,7 @@ function exportContent(
         } as Record<string, string>
       )[mime] ?? "jpg";
     const filename = `${path}.${extension}`;
-    images[filename] = Uint8Array.from(atob(data), (character) => character.charCodeAt(0));
+    images[filename] = new Uint8Array(await content.image.arrayBuffer());
     result.image = filename;
   }
   return result;
@@ -622,7 +626,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
-function imageDataUrl(path: unknown, files: Record<string, Uint8Array>): string | undefined {
+function imageDataBlob(path: unknown, files: Record<string, Uint8Array>): Blob | undefined {
   if (path === undefined) return undefined;
   if (
     typeof path !== "string" ||
@@ -647,13 +651,7 @@ function imageDataUrl(path: unknown, files: Record<string, Uint8Array>): string 
     } as Record<string, string>
   )[extension ?? ""];
   if (!mime) throw new Error("Unsupported image format");
-  let binary = "";
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(
-      ...bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)),
-    );
-  }
-  return `data:${mime};base64,${btoa(binary)}`;
+  return new Blob([bytes.slice().buffer], { type: mime });
 }
 
 function parseLocalizedContent(
@@ -671,7 +669,7 @@ function parseLocalizedContent(
     }
     text[language as ContentLanguage] = translation;
   }
-  const image = imageDataUrl(value.image, files);
+  const image = imageDataBlob(value.image, files);
   if (!image && !Object.values(text).some((translation) => translation.trim()))
     throw new Error("Empty content");
   return { text, image };
@@ -770,7 +768,7 @@ function SavedQuestion({
       </div>
       <p className="text-sm font-medium leading-snug">{text}</p>
       {question.q.image && (
-        <img
+        <StoredImage
           src={question.q.image}
           alt=""
           className="max-h-28 rounded border border-border bg-muted/40 object-contain"
@@ -787,7 +785,11 @@ function SavedQuestion({
             <span>
               {content.text[language] || content.text.ro || Object.values(content.text)[0] || ""}
               {content.image && (
-                <img src={content.image} alt="" className="mt-1 max-h-16 rounded object-contain" />
+                <StoredImage
+                  src={content.image}
+                  alt=""
+                  className="mt-1 max-h-16 rounded object-contain"
+                />
               )}
             </span>
           </li>

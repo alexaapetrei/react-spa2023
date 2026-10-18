@@ -193,14 +193,14 @@ function Sidebar({
         className={cn(
           "fixed inset-y-0 z-10 flex w-(--sidebar-width) flex-col overscroll-contain overflow-hidden touch-pan-y bg-sidebar text-sidebar-foreground",
           openMobile ? "visible" : "invisible",
-          side === "left"
-            ? "left-0 border-r dark:border-r-cyan-300/70 dark:[filter:drop-shadow(10px_0_18px_rgba(34,211,238,0.95))_drop-shadow(24px_0_40px_rgba(34,211,238,0.65))]"
-            : "right-0 border-l dark:border-l-cyan-300/70 dark:[filter:drop-shadow(-10px_0_18px_rgba(34,211,238,0.95))_drop-shadow(-24px_0_40px_rgba(34,211,238,0.65))]",
+          side === "left" ? "left-0 border-r" : "right-0 border-l",
           className,
         )}
         style={
           {
             "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+            paddingInlineStart: side === "left" ? "env(safe-area-inset-left)" : undefined,
+            paddingInlineEnd: side === "right" ? "env(safe-area-inset-right)" : undefined,
             pointerEvents: openMobile ? "auto" : "none",
           } as React.CSSProperties
         }
@@ -242,11 +242,12 @@ function Sidebar({
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
-          side === "left"
-            ? "dark:border-r-cyan-300/70 dark:[filter:drop-shadow(10px_0_18px_rgba(34,211,238,0.95))_drop-shadow(24px_0_40px_rgba(34,211,238,0.65))]"
-            : "dark:border-l-cyan-300/70 dark:[filter:drop-shadow(-10px_0_18px_rgba(34,211,238,0.95))_drop-shadow(-24px_0_40px_rgba(34,211,238,0.65))]",
           className,
         )}
+        style={{
+          paddingInlineStart: side === "left" ? "env(safe-area-inset-left)" : undefined,
+          paddingInlineEnd: side === "right" ? "env(safe-area-inset-right)" : undefined,
+        }}
         {...props}
       >
         <div

@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import Image from "./ui/image";
+import { StoredImage } from "./ui/stored-image";
 import { ArrowRight, Check, X, Circle } from "lucide-react";
 import type { Category, QuizContent } from "../hooks/useCatego";
 import { recordAnswer } from "../lib/progress-store";
@@ -107,7 +108,7 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
             <span className="flex-1 leading-snug">
               {answerContent.text}
               {answerContent.image && (
-                <img
+                <StoredImage
                   src={answerContent.image}
                   alt=""
                   className="mt-2 block max-h-48 w-auto max-w-full rounded-lg border border-border bg-muted/30 object-contain"
@@ -171,6 +172,8 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
         className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 px-3 pt-3 backdrop-blur-sm md:sticky md:inset-x-auto md:-mx-4 md:px-6"
         style={{
           viewTransitionName: "action-bar",
+          paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
+          paddingRight: "max(0.75rem, env(safe-area-inset-right))",
           paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
         }}
       >
@@ -195,7 +198,7 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
   );
 }
 
-function contentParts(content: QuizContent): { text: string; image?: string } {
+function contentParts(content: QuizContent): { text: string; image?: Blob } {
   if (typeof content === "string") return { text: content };
   return { text: Object.values(content.text)[0] ?? "", image: content.image };
 }

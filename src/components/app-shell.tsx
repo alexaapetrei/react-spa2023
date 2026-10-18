@@ -8,6 +8,7 @@ import { TooltipProvider } from "./ui/tooltip";
 import { AppSidebarLeft } from "./app-sidebar-left";
 import { AppSidebarRight } from "./app-sidebar-right";
 import { categoryLabel } from "@/lib/categories";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 /** Routes opt in to the right rail by marking themselves in the route tree. */
 type ShellStaticData = { questionContext?: boolean };
@@ -48,31 +49,20 @@ function SwipeableAppContent({
     y: number;
     side: "left" | "right" | null;
     closing: boolean;
+    moved: boolean;
   } | null>(null);
   const capturedPointer = useRef<number | null>(null);
   const settleTimer = useRef<number | null>(null);
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (!enabled || !isMobile || event.pointerType !== "touch") return;
-    if (activeSide) {
-      event.preventDefault();
-      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
-      onPreview({ side: activeSide, progress: 0, settling: true });
-      settleTimer.current = window.setTimeout(() => {
-        onCancel(activeSide);
-        onPreview(null);
-        onEndpointHaptic("closed");
-        settleTimer.current = null;
-      }, 200);
-      return;
-    }
-
     swipeStart.current = {
       pointerId: event.pointerId,
       x: event.clientX,
       y: event.clientY,
       side: null,
       closing: false,
+      moved: false,
     };
     capturedPointer.current = null;
   };
@@ -83,6 +73,7 @@ function SwipeableAppContent({
 
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
+    if (Math.hypot(dx, dy) > 12) start.moved = true;
     if (capturedPointer.current === null && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
       event.currentTarget.setPointerCapture(event.pointerId);
       capturedPointer.current = event.pointerId;
@@ -126,7 +117,24 @@ function SwipeableAppContent({
     const start = swipeStart.current;
     swipeStart.current = null;
     capturedPointer.current = null;
-    if (!start || start.pointerId !== event.pointerId || !start.side) return;
+    if (!start || start.pointerId !== event.pointerId) return;
+    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12) {
+      start.moved = true;
+    }
+
+    if (!start.side) {
+      if (activeSide && !start.moved) {
+        if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+        onPreview({ side: activeSide, progress: 0, settling: true });
+        settleTimer.current = window.setTimeout(() => {
+          onCancel(activeSide);
+          onPreview(null);
+          onEndpointHaptic("closed");
+          settleTimer.current = null;
+        }, 200);
+      }
+      return;
+    }
 
     const dx = event.clientX - start.x;
     const travel = start.closing
@@ -137,7 +145,7 @@ function SwipeableAppContent({
         ? dx
         : -dx;
     const panelWidth = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 18;
-    const crossedMidpoint = travel > (start.closing ? panelWidth / 2 : window.innerWidth / 2);
+    const crossedMidpoint = travel > panelWidth / 2;
     const alreadyFullyExtended = !start.closing && travel >= panelWidth;
 
     if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
@@ -218,6 +226,7 @@ function SwipeableAppContent({
  */
 export function AppShell() {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [rightOpen, setRightOpen] = useState(true);
   const [leftMobileOpen, setLeftMobileOpen] = useState(false);
   const [rightMobileOpen, setRightMobileOpen] = useState(false);
@@ -301,14 +310,20 @@ export function AppShell() {
         <AppSidebarLeft />
 
         <SidebarInset
+          data-glow-edge={
+            mobileSwipe?.side ?? (leftMobileOpen ? "left" : rightMobileOpen ? "right" : undefined)
+          }
           onTransitionEnd={(event) => {
             if (event.propertyName !== "transform") return;
             if (mobileSidebarOpen && !mobileSwipe) vibrateAtEndpoint("open");
             else if (!mobileSidebarOpen) vibrateAtEndpoint("closed");
           }}
           style={{
-            filter: mobileSidebarFullyExtended ? "blur(2px) grayscale(1)" : "none",
-            boxShadow: mobileSidebarMoving ? "0 0 2rem rgb(0 0 0 / 32%)" : "none",
+            paddingInline: "env(safe-area-inset-left) env(safe-area-inset-right)",
+            filter: mobileSidebarFullyExtended ? "blur(2px)" : "none",
+            boxShadow: mobileSidebarMoving
+              ? "var(--sidebar-overlay-shadow, 0 0 2rem rgb(0 0 0 / 32%))"
+              : "none",
             transform: mobileSwipe
               ? `translateX(${mobileSwipe.side === "left" ? "" : "-"}${mobileSwipe.progress}px)`
               : leftMobileOpen
@@ -335,7 +350,7 @@ export function AppShell() {
                 aria-label={t("nav.toggleProgress")}
                 title={t("nav.toggleProgress")}
                 onClick={() => {
-                  if (window.matchMedia("(max-width: 767px)").matches) {
+                  if (isMobile) {
                     handleRightMobileChange(!rightMobileOpen);
                   } else {
                     setRightOpen((open) => !open);

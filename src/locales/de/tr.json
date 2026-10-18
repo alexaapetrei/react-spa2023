@@ -97,7 +97,7 @@
       "answers": "Fülle mindestens zwei Antworten aus.",
       "correct": "Markiere mindestens eine richtige Antwort.",
       "image": "Dieses Bild konnte nicht verarbeitet werden. Versuche ein anderes Bild.",
-      "storage": "Der Browserspeicher ist voll. Exportiere dein Set oder entferne einige Bilder und versuche es erneut."
+      "storage": "Speichern im Browserspeicher fehlgeschlagen. Prüfe den verfügbaren Speicherplatz und versuche es erneut."
     },
     "export": "Export + Bilder (.zip)",
     "exportHint": "Die ZIP-Datei enthält set.json und einen Bilderordner für die Sicherung oder Übertragung auf ein anderes Gerät.",

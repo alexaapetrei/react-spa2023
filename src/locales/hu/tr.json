@@ -97,7 +97,7 @@
       "answers": "Tölts ki legalább két választ.",
       "correct": "Jelölj meg legalább egy helyes választ.",
       "image": "A képet nem sikerült feldolgozni. Próbálj másik képet.",
-      "storage": "A böngésző tárhelye megtelt. Exportáld a készletet, vagy törölj néhány képet, majd próbáld újra."
+      "storage": "Nem sikerült a böngésző tárhelyére menteni. Ellenőrizd a szabad tárhelyet, majd próbáld újra."
     },
     "export": "Export + képek (.zip)",
     "exportHint": "A ZIP tartalmazza a set.json fájlt és egy képmappát biztonsági mentéshez vagy másik eszközre költöztetéshez.",
