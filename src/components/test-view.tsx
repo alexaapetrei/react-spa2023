@@ -24,7 +24,7 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
   const hasImage = !!questionContent.image || (chosen.i || 0) > 0;
   const correctKeys = chosen.v.replaceAll(",", "").split("");
   const actionButtonClass =
-    "h-12 w-full text-base bg-green-50 hover:bg-green-100 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 dark:disabled:bg-neutral-800/60 dark:disabled:text-neutral-300";
+    "h-12 w-full text-base bg-green-50 text-green-950 hover:bg-green-100 dark:bg-green-900 dark:text-green-50 dark:hover:bg-green-800 dark:disabled:bg-neutral-800/60 dark:disabled:text-neutral-300";
 
   const handleCheck = () => {
     setChecked(true);
