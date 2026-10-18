@@ -32,7 +32,7 @@ import {
 } from "@/lib/custom-questions-store";
 
 const MAX_ANSWERS = 20;
-const MAX_IMAGE_DIMENSION = 1600;
+const MAX_IMAGE_WIDTH = 1024;
 const keyAt = (index: number) => String.fromCharCode(97 + index);
 const emptyContent = (): LocalizedContent => ({ text: {} });
 const emptyForm = () => ({
@@ -73,8 +73,8 @@ async function optimizeImage(file: File): Promise<string> {
     return readAsDataUrl(file);
   }
   try {
-    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height));
-    if (scale === 1 && file.size <= 1_500_000) return readAsDataUrl(file);
+    const scale = Math.min(1, MAX_IMAGE_WIDTH / bitmap.width);
+    if (scale === 1 && file.size <= 256_000) return readAsDataUrl(file);
 
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));

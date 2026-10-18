@@ -110,7 +110,7 @@ export function TestView({ chosen, categoria, next, isRetake }: TestViewProps) {
                 <img
                   src={answerContent.image}
                   alt=""
-                  className="mt-2 max-h-48 max-w-full rounded-lg object-contain"
+                  className="mt-2 block max-h-48 w-auto max-w-full rounded-lg border border-border bg-muted/30 object-contain"
                 />
               )}
             </span>
